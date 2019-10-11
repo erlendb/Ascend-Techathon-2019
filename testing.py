@@ -205,7 +205,7 @@ def main():
 
     drone = SimDrone()
 
-    img = drone.camera_image
+    img = drone.camera.image
     roslog(img)
 
     '''
