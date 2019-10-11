@@ -9,10 +9,12 @@ import math
 
 from dronelib import SimDrone
 from tsp_solver.greedy import solve_tsp
-from util import get_windmill_positions
+from util import get_windmill_positions, build_rust_report_message
+from is_rust import is_rust
+from rust_score import rust_score
 
 
-RELATIVE_FLYING_HEIGT = 5
+RELATIVE_FLYING_HEIGT = 1
 RADIUS_AROUND_WINDMILL = 20
 
 class Super_point:
@@ -38,18 +40,8 @@ class Starting_mission(smach.State):
         userdata.drone.activate()
         userdata.drone.takeoff(RELATIVE_FLYING_HEIGT)
 
-        rospy.loginfo(userdata.drone.yaw)
-
         # Gets windmill position and makes a path that begins and ends at launch site
         windmill_positions = get_windmill_positions()   
-        windmill_positions.pop()
-        windmill_positions.pop()
-        windmill_positions.pop()
-        windmill_positions.pop()
-        windmill_positions.pop()
-        windmill_positions.pop()
-        windmill_positions.pop()
-        windmill_positions.pop()
         home_point = Super_point(0, 0, 0)
         windmill_positions.append(home_point)
         windmill_positions.insert(0, home_point)
@@ -76,6 +68,8 @@ class Flying_to_target(smach.State):
             x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
             userdata.drone.set_target(x_new, y_new)
 
+        # TODO: collision avoidance
+
         while not is_at_target(userdata.drone):
             continue
 
@@ -96,7 +90,6 @@ class Inspecting(smach.State):
         current_windmill = userdata.drone.target
         sub_path = points_around_windmill(userdata.drone, current_windmill)
         images = []
-        rust_scores = []
 
 
         for target in sub_path:
@@ -108,21 +101,24 @@ class Inspecting(smach.State):
 
             # Take and analyse photo
             images.append(userdata.drone.camera.image)
-            rust_scores.append(analyse_photo(images[-1]))
 
 
         # Evaluate if/how much rust on windmill
         RUST_THRESHOLD = 10
-        rust_score = sum(rust_scores)
+
         has_rust = False
-        if rust_score > RUST_THRESHOLD:
-            has_rust = True
+        rust_images = []
+        for img in images:
+            score = rust_score(img)
+            if score > RUST_THRESHOLD:
+                has_rust = True
+                rust_images.append(img)
 
         # Save rust score for later sorting
-        userdata.rust_score_dict[current_windmill] = rust_score
+        #userdata.rust_score_dict[current_windmill] = rust_score
 
         # Save report for current windmill
-        # userdata.rust_reports.append(build_rust_report_message(current_windmill, has_rust, images))
+        userdata.rust_reports.append(build_rust_report_message(current_windmill, has_rust, rust_images))
 
         return 'inspection_complete'
 
