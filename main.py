@@ -5,7 +5,8 @@ import smach
 import smach_ros
 
 from dronelib import SimDrone
-from tsp_solver.greedy import solve_tsp
+#from tsp_solver.greedy import solve_tsp
+from greedy import solve_tsp
 
 
 
@@ -42,13 +43,13 @@ class Flying_to_target(smach.State):
             continue # TODO: sleep?
 
 
-        if not userdata.path: # no more targets in path => drone is back home 
+        if not userdata.path: # no more targets in path => drone is back home
             return 'arrived_at_landing_pos'
         else:
             return 'arrived_at_windmill'
 
 
-class Inspecting(smach.State): 
+class Inspecting(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['inspection_complete'],
@@ -111,7 +112,7 @@ class Ending_mission(smach.State):
         return 'mission_ended'
 
 
-def make_path(points):    
+def make_path(points):
     distances = []
     for i in range(0, len(points)):
         sub_distances = []
@@ -133,7 +134,7 @@ def make_path(points):
 
 def analyse_photo(img):   # TODO: implement photo taking and analysis
     """
-    Returns a score for how much rust there is in the image 
+    Returns a score for how much rust there is in the image
     """
     pass
 
