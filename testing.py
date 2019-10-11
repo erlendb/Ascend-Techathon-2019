@@ -3,8 +3,7 @@
 import rospy
 import smach
 import smach_ros
-import cv2
-
+import pickle
 
 from dronelib import SimDrone
 from tsp_solver.greedy import solve_tsp
@@ -207,7 +206,13 @@ def main():
     drone = SimDrone()
 
     img = drone.camera.image
-    cv2.imshow("image", img)
+    #cv2.imshow("image", img)# Step 2
+
+    # Step 2
+    with open('imgobject', 'wb') as config_dictionary_file:
+
+    # Step 3
+    pickle.dump(img, config_dictionary_file)
 
     '''
     # Create a SMACH state machine
