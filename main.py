@@ -39,6 +39,14 @@ class Starting_mission(smach.State):
 
         # Gets windmill position and makes a path that begins and ends at launch site
         windmill_positions = get_windmill_positions()   
+        windmill_positions.pop()
+        windmill_positions.pop()
+        windmill_positions.pop()
+        windmill_positions.pop()
+        windmill_positions.pop()
+        windmill_positions.pop()
+        windmill_positions.pop()
+        windmill_positions.pop()
         home_point = Super_point(0, 0, 0)
         windmill_positions.append(home_point)
         windmill_positions.insert(0, home_point)
@@ -56,15 +64,17 @@ class Flying_to_target(smach.State):
 
     def execute(self, userdata):
         target = userdata.path.pop()
+
+        if target.x == 0 and target.y == 0:
+            pass
+
         userdata.drone.set_target(target.x, target.y)
 
-        print(target)
-        print(target.x)
-        print(target.y)
-
-        while not is_at_target(userdata.drone):
+        # TODO: dehackify
+        while distance_to_target(userdata.drone) > 20:
             continue # TODO: sleep?
-
+        current_pos = userdata.drone.position
+        userdata.drone.set_target(current_pos.x, current_pos.y)
 
         if not userdata.path: # no more targets in path => drone is back home
             return 'arrived_at_landing_pos'
@@ -90,7 +100,7 @@ class Inspecting(smach.State):
 
             # Fly to target
             userdata.drone.set_target(target.x, target.y, yaw=target.yaw) # TODO: targets as points or setpoints?
-            while not is_at_target(userdata.drone, 1):
+            while not is_at_target(userdata.drone):
                 continue # TODO: sleep?
 
             # Take and analyse photo
@@ -119,7 +129,7 @@ class Ending_mission(smach.State):
         smach.State.__init__(self,
                             outcomes=['mission_ended'],
                             input_keys=['path', 'drone'],
-                            output_keys=['path'])
+                            output_keys=['path', 'drone'])
 
     def execute(self, userdata):
         userdata.drone.land()
@@ -128,8 +138,8 @@ class Ending_mission(smach.State):
         # rospy.loginfo("Sending rust reports for task 3")
         # send_total_inspection_report(sorted_rust_reports)
 
-        while (userdata.drone.z > 0):
-            pass
+        while (abs(userdata.drone.velocity.z) > 0):
+            continue
         userdata.drone.deactivate()
 
         return 'mission_ended'
@@ -148,8 +158,8 @@ def make_path(points):
     path_indexes = solve_tsp(distances, endpoints = (0,last_index) )
 
     path = []
-    for i in range(0, len(points)):
-        index = path_indexes[i]
+    for i in range(1, len(points)):
+        index = path_indexes[i-1]
         path.append(points[index])
 
     return path
@@ -166,12 +176,25 @@ def points_around_windmill(drone_pos, windmill_pos):
     return []
 
 
-def is_at_target(drone, distance_to_target=10):
+def distance_to_target(drone):
     """
-    returns True when drone is within a set distance to target,
-    and return False otherwise.
+    returns distance to target
     """
-    pass
+    return  ((drone.target.x - drone.position.x)**2 +
+                          (drone.target.y - drone.position.y)**2 +
+                          (drone.target.z - drone.position.z)**2)**0.5
+
+
+def isAtTarget(drone):
+    distance_to_target = ((drone.target.x - drone.position.x)**2 +
+                          (drone.target.y - drone.position.y)**2 +
+                          (drone.target.z - drone.position.z)**2)**0.5
+    velocity = (drone.velocity.x**2 + drone.velocity.y**2 + drone.velocity.z**2)**0.5
+
+    if distance_to_target < 0.5 and velocity < 0.2:
+        return True
+
+    return False
 
 
 
