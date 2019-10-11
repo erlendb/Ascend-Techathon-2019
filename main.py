@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import rospy
 import smach
 import smach_ros
+import math
 
 
 from dronelib import SimDrone
@@ -11,6 +13,7 @@ from util import get_windmill_positions
 
 
 RELATIVE_FLYING_HEIGT = 5
+RADIUS_AROUND_WINDMILL = 20
 
 class Super_point:
     x = 0
@@ -70,7 +73,7 @@ class Flying_to_target(smach.State):
             userdata.drone.set_target(target.x, target.y, 1)
         else:
             # Scare target such that drone stops in front of windmill
-            x_new, y_new = get_closer_target(userdata.drone, target, 20)
+            x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
             print(target.x)
             print(target.y)
             print(x_new)
@@ -175,11 +178,6 @@ def analyse_photo(img):   # TODO: implement photo taking and analysis
     """
     pass
 
-
-def points_around_windmill(drone_pos, windmill_pos):
-    return []
-
-
 def is_at_target(drone):
     distance_to_target = ((drone.target.x - drone.position.x)**2 +
                           (drone.target.y - drone.position.y)**2 +
@@ -199,6 +197,34 @@ def get_closer_target(drone, target, distance=10):
     dx = unit_diff[0] * distance
     dy = unit_diff[1] * distance
     return (target.x + dx, target.y + dy)
+
+
+def angle3pt(a, b, c):
+    """Counterclockwise angle in degrees by turning from a to c around b
+        Returns a float between 0.0 and 360.0"""
+    ang = math.degrees(
+        math.atan2(c[1]-b[1], c[0]-b[0]) - math.atan2(a[1]-b[1], a[0]-b[0]))
+    return ang + 360.0 if ang < 0.0 else ang
+
+## Returnerer en liste med points(x, y, yaw) med lenght lik total_points. Maa kjøres i første bildeposisjon.
+def points_around_windmill(drone_pos, windmill_pos): # need: import math
+    radius = RADIUS_AROUND_WINDMILL          # Avstand fra fyrtårn [m]
+    total_points = 3    # Antall punkter rundt fyrtårnet. Funker med 1, 2, 3, 4, 6, 12.
+    t = list((range(0, 360, int(360/12)))) 
+    point = []
+    x = []
+    y = []
+    for i in range(len(t)):  # Lager 12 punkter med radius radius fra origo 
+        x.append(radius*(math.sin(math.radians(t[i]))))
+        y.append(radius*(math.cos(math.radians(t[i]))))
+    index_array = list((range(int(12/total_points), 12, int(12/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
+     # Første punkt er drone_pos!!
+     # Finner vinkel for verdenskoordinater til dronekoordinater
+    angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone_pos.x, drone_pos.y))
+    point.append(drone_pos)  # Første punkt er drone_pos!!
+    for i in index_array: 
+        point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
+    return point
 
 
 
