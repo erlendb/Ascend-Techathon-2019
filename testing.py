@@ -38,7 +38,7 @@ class Starting_mission(smach.State):
         rospy.loginfo(userdata.drone.yaw)
 
         # Gets windmill position and makes a path that begins and ends at launch site
-        windmill_positions = get_windmill_positions()   
+        windmill_positions = get_windmill_positions()
         windmill_positions.pop()
         windmill_positions.pop()
         windmill_positions.pop()
@@ -203,6 +203,7 @@ def main():
 
     # TODO: set up smach correctly with all states
 
+    '''
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['mission_ended'])
 
@@ -238,6 +239,7 @@ def main():
 
     # Execute SMACH plan
     outcome = sm.execute()
+    '''
 
 
 if __name__ == '__main__':
