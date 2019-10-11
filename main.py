@@ -10,6 +10,18 @@ from tsp_solver.greedy import solve_tsp
 from util import get_windmill_positions
 
 
+RELATIVE_FLYING_HEIGT = 5
+
+class Super_point:
+    x = 0
+    y = 0
+    z = 0
+    yaw = 0
+    def __init__(self, x, y, yaw):
+        self.x = x
+        self.y = y
+        self.yaw = yaw
+
 
 class Starting_mission(smach.State):
     def __init__(self):
@@ -21,9 +33,15 @@ class Starting_mission(smach.State):
     def execute(self, userdata):
 
         userdata.drone.activate()
-        userdata.drone.takeoff()
+        userdata.drone.takeoff(RELATIVE_FLYING_HEIGT)
 
-        windmill_positions = get_windmill_positions()
+        rospy.loginfo(userdata.drone.yaw)
+
+        # Gets windmill position and makes a path that begins and ends at launch site
+        windmill_positions = get_windmill_positions()   
+        home_point = Super_point(0, 0, 0)
+        windmill_positions.append(home_point)
+        windmill_positions.insert(0, home_point)
         userdata.path = make_path(windmill_positions)
 
         return 'startup_complete'
@@ -39,6 +57,10 @@ class Flying_to_target(smach.State):
     def execute(self, userdata):
         target = userdata.path.pop()
         userdata.drone.set_target(target.x, target.y)
+
+        print(target)
+        print(target.x)
+        print(target.y)
 
         while not is_at_target(userdata.drone):
             continue # TODO: sleep?
