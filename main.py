@@ -63,18 +63,18 @@ class Flying_to_target(smach.State):
                             output_keys=['path', 'drone'])
 
     def execute(self, userdata):
+
         target = userdata.path.pop()
+        
+        if target.x == 0 and target.y == 0: # target is launch pad
+            userdata.drone.set_target(target.x, target.y)
+        else:
+            # Scare target such that drone stops in front of windmill
+            x_new, y_new = get_closer_target(userdata.drone, target)
+            userdata.drone.set_target(x_new, y_new)
 
-        if target.x == 0 and target.y == 0:
-            pass
-
-        userdata.drone.set_target(target.x, target.y)
-
-        # TODO: dehackify
-        while distance_to_target(userdata.drone) > 20:
-            continue # TODO: sleep?
-        current_pos = userdata.drone.position
-        userdata.drone.set_target(current_pos.x, current_pos.y)
+        while not isAtTarget(userdata.drone):
+            continue
 
         if not userdata.path: # no more targets in path => drone is back home
             return 'arrived_at_landing_pos'
@@ -101,7 +101,7 @@ class Inspecting(smach.State):
             # Fly to target
             userdata.drone.set_target(target.x, target.y, yaw=target.yaw) # TODO: targets as points or setpoints?
             while not is_at_target(userdata.drone):
-                continue # TODO: sleep?
+                continue 
 
             # Take and analyse photo
             images.append(userdata.drone.camera_image)
@@ -195,6 +195,14 @@ def isAtTarget(drone):
         return True
 
     return False
+
+
+def get_closer_target(drone, target, distance=10):
+    diff = (drone.position.x - target.x, drone.position.y - target.y)
+    unit_diff = diff / (diff[0]**2 + diff[1]**2)**0.5
+    (dx, dy) = unit_diff * distance
+    return (target.x - dx, target.y - dy)
+
 
 
 
