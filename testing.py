@@ -212,7 +212,7 @@ def main():
     with open('imgobject', 'wb') as config_dictionary_file:
 
     # Step 3
-    pickle.dump(img, config_dictionary_file)
+        pickle.dump(img, config_dictionary_file)
 
     '''
     # Create a SMACH state machine
