@@ -67,13 +67,17 @@ class Flying_to_target(smach.State):
         target = userdata.path.pop()
         
         if target.x == 0 and target.y == 0: # target is launch pad
-            userdata.drone.set_target(target.x, target.y)
+            userdata.drone.set_target(target.x, target.y, 1)
         else:
             # Scare target such that drone stops in front of windmill
-            x_new, y_new = get_closer_target(userdata.drone, target)
+            x_new, y_new = get_closer_target(userdata.drone, target, 20)
+            print(target.x)
+            print(target.y)
+            print(x_new)
+            print(y_new)
             userdata.drone.set_target(x_new, y_new)
 
-        while not isAtTarget(userdata.drone):
+        while not is_at_target(userdata.drone):
             continue
 
         if not userdata.path: # no more targets in path => drone is back home
@@ -138,7 +142,7 @@ class Ending_mission(smach.State):
         # rospy.loginfo("Sending rust reports for task 3")
         # send_total_inspection_report(sorted_rust_reports)
 
-        while (abs(userdata.drone.velocity.z) > 0):
+        while (abs(userdata.drone.velocity.z) > 0.5):
             continue
         userdata.drone.deactivate()
 
@@ -176,16 +180,7 @@ def points_around_windmill(drone_pos, windmill_pos):
     return []
 
 
-def distance_to_target(drone):
-    """
-    returns distance to target
-    """
-    return  ((drone.target.x - drone.position.x)**2 +
-                          (drone.target.y - drone.position.y)**2 +
-                          (drone.target.z - drone.position.z)**2)**0.5
-
-
-def isAtTarget(drone):
+def is_at_target(drone):
     distance_to_target = ((drone.target.x - drone.position.x)**2 +
                           (drone.target.y - drone.position.y)**2 +
                           (drone.target.z - drone.position.z)**2)**0.5
@@ -199,9 +194,11 @@ def isAtTarget(drone):
 
 def get_closer_target(drone, target, distance=10):
     diff = (drone.position.x - target.x, drone.position.y - target.y)
-    unit_diff = diff / (diff[0]**2 + diff[1]**2)**0.5
-    (dx, dy) = unit_diff * distance
-    return (target.x - dx, target.y - dy)
+    lenght = (diff[0]**2 + diff[1]**2)**0.5
+    unit_diff = (diff[0] / lenght, diff[1] / lenght)
+    dx = unit_diff[0] * distance
+    dy = unit_diff[1] * distance
+    return (target.x + dx, target.y + dy)
 
 
 
