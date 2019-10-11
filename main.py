@@ -9,7 +9,7 @@ import math
 
 from dronelib import SimDrone
 from tsp_solver.greedy import solve_tsp
-from util import get_windmill_positions, build_rust_report_message
+from util import get_windmill_positions, build_rust_report_message, send_total_inspection_report, send_single_inspection_report
 from is_rust import is_rust
 from rust_score import rust_score
 
@@ -54,17 +54,18 @@ class Flying_to_target(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['arrived_at_landing_pos','arrived_at_windmill'],
-                            input_keys=['path', 'drone'],
-                            output_keys=['path', 'drone'])
+                            input_keys=['path', 'drone', 'current_windmill'],
+                            output_keys=['path', 'drone', 'current_windmill'])
 
     def execute(self, userdata):
 
         target = userdata.path.pop()
         
         if target.x == 0 and target.y == 0: # target is launch pad
-            userdata.drone.set_target(target.x, target.y, 1)
+            userdata.drone.set_target(target.x, target.y)
         else:
             # Scare target such that drone stops in front of windmill
+            userdata.current_windmill = target
             x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
             userdata.drone.set_target(x_new, y_new)
 
@@ -83,19 +84,19 @@ class Inspecting(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['inspection_complete'],
-                            input_keys=['drone', 'rust_score_dict', 'rust_reports'],
-                            output_keys=['drone', 'rust_score_dict', 'rust_reports'])
+                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill'],
+                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill'])
 
     def execute(self, userdata):
-        current_windmill = userdata.drone.target
-        sub_path = points_around_windmill(userdata.drone, current_windmill)
+        sub_path = points_around_windmill(userdata.drone, userdata.current_windmill)
         images = []
 
 
         for target in sub_path:
 
             # Fly to target
-            userdata.drone.set_target(target.x, target.y, yaw=target.yaw) # TODO: targets as points or setpoints?
+            userdata.drone.set_target(target.x, target.y, yaw=target.yaw) 
+            
             while not is_at_target(userdata.drone):
                 continue 
 
@@ -118,7 +119,11 @@ class Inspecting(smach.State):
         #userdata.rust_score_dict[current_windmill] = rust_score
 
         # Save report for current windmill
-        userdata.rust_reports.append(build_rust_report_message(current_windmill, has_rust, rust_images))
+        #userdata.rust_reports.append(build_rust_report_message(userdata.current_windmill, has_rust, rust_images))
+
+        rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
+        rospy.loginfo("Sending rust report for task 2")
+        send_single_inspection_report(rust_report)
 
         return 'inspection_complete'
 
@@ -127,21 +132,25 @@ class Ending_mission(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['mission_ended'],
-                            input_keys=['path', 'drone'],
-                            output_keys=['path', 'drone'])
+                            input_keys=['path', 'drone', 'rust_reports'],
+                            output_keys=['path', 'drone', 'rust_reports'])
 
     def execute(self, userdata):
         userdata.drone.land()
 
         # Rapportere
         # rospy.loginfo("Sending rust reports for task 3")
-        # send_total_inspection_report(sorted_rust_reports)
+        # send_total_inspection_report(userdata.rust_reports)
 
         while (abs(userdata.drone.velocity.z) > 0.5):
             continue
         userdata.drone.deactivate()
 
         return 'mission_ended'
+
+
+
+
 
 
 def make_path(points):
@@ -213,11 +222,12 @@ def points_around_windmill(drone, windmill_pos): # need: import math
      # Første punkt er drone_pos!!
      # Finner vinkel for verdenskoordinater til dronekoordinater
     angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone.position.x, drone.position.y))
-    
     point.append(Super_point(drone.position.x, drone.position.y, drone.yaw))  # Første punkt er drone_pos!!
     for i in index_array: 
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
     return point
+
+
 
 
 
@@ -234,6 +244,7 @@ def main():
     sm.userdata.path = []
     sm.userdata.rust_reports = []
     sm.userdata.rust_score_dict = {}
+    sm.userdata.current_windmill = None
 
 
     # Open the container
@@ -256,12 +267,12 @@ def main():
 								remapping={'foo_counter_in':'sm_counter', 'foo_counter_out':'sm_counter'})
 
     	smach.StateMachine.add('ending_mission', Ending_mission(),
-								transitions={'mission_ended':'mission_ended'}, # ???????????
+								transitions={'mission_ended':'mission_ended'}, # transition -> transition ????
 								remapping={'bar_counter_in':'sm_counter'})
 
 
     # Execute SMACH plan
-    outcome = sm.execute()
+    sm.execute()
 
 
 if __name__ == '__main__':
