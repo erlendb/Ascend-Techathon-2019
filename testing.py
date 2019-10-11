@@ -3,6 +3,7 @@
 import rospy
 import smach
 import smach_ros
+import cv2
 
 
 from dronelib import SimDrone
@@ -206,7 +207,7 @@ def main():
     drone = SimDrone()
 
     img = drone.camera.image
-    roslog(img)
+    cv2.imshow("image", img)
 
     '''
     # Create a SMACH state machine
