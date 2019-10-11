@@ -1,11 +1,13 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 
 import rospy
-#import smach
-#import smach_ros
+import smach
+import smach_ros
+
 
 from dronelib import SimDrone
-#from tsp_solver.greedy import solve_tsp
+from tsp_solver.greedy import solve_tsp
+from util import get_windmill_positions
 
 
 
@@ -139,7 +141,7 @@ def analyse_photo(img):   # TODO: implement photo taking and analysis
 
 
 def points_around_windmill(drone_pos, windmill_pos):
-    return None
+    return []
 
 
 def is_at_target(drone, distance_to_target=10):
