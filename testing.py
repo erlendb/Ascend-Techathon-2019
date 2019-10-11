@@ -203,7 +203,12 @@ def main():
 
     # TODO: set up smach correctly with all states
 
+    drone = SimDrone()
 
+    img = drone.camera_image
+    roslog(img)
+
+    '''
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['mission_ended'])
 
@@ -212,10 +217,8 @@ def main():
     sm.userdata.rust_reports = []
     sm.userdata.rust_score_dict = {}
 
-    img = drone.camera_image
-    roslog(img)
 
-    '''
+
     # Open the container
     with sm:
         # Add states to the container
