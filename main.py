@@ -58,7 +58,7 @@ class Flying_to_target(smach.State):
         else:
             # Modify target such that drone stops in front of windmill
             userdata.current_windmill = target
-            x_new, y_new = get_closer_target(userdata.drone, target, 10)    # 10 fordi vi maa komme naerme nok for reg.
+            x_new, y_new = get_closer_target(userdata.drone, target, 12)    # 12 fordi vi maa komme naerme nok for reg.
 
             # find desired yaw
             target_yaw = yaw_towards_windmill(Super_point(x_new, y_new, 0), target)
