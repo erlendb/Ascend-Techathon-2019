@@ -59,6 +59,32 @@ def crop_base(image_array):
 
     return finalImage
 
+def getCentreLocation(cropped_img):
+    gray_image = cv.cvtColor(cropped_img, cv.COLOR_BGR2GRAY)
+    _,finalImage = cv.threshold(gray_image,0,254, cv.THRESH_BINARY)
+
+    M = cv.moments(finalImage)
+ 
+    # calculate x,y coordinate of center
+    cX = int(M["m10"] / M["m00"])
+    cY = int(M["m01"] / M["m00"])
+
+    return (cX, cY)
+
+def getWidthBase(cropped_img, centre):
+    """
+    get width of yellow base
+    """
+    gray_image = cv.cvtColor(cropped_img, cv.COLOR_BGR2GRAY)
+    _,treshImage = cv.threshold(gray_image,0,255, cv.THRESH_BINARY)
+
+    cX, cY = centre
+    mid_row = treshImage[cY]
+
+    n_white_pix = np.sum(mid_row == 255)
+
+    return n_white_pix
+
 def rust_score(image_array):
     """
     Function that calculates the rust score for a picture. 
