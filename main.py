@@ -89,14 +89,37 @@ class Inspecting(smach.State):
         has_rust = False
         rust_images = []
 
+        # Defines points where phots should be taken
+        picture_target = []
+        picture_target.append(sub_path[-1])
+        picture_target.append(sub_path[int(len(sub_path)/2)])
+
+        first_run = True
+
 
         for target in sub_path:
 
             # Fly to target
             userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
 
-            while not is_at_target(userdata.drone) :
+            if first_run:
+                first_run = False
+                while not is_at_target(userdata.drone):
+                    continue
+            else:
+                while not is_almost_at_target(userdata.drone):
+                    continue
+
+            # Checks if photo should be taken from this position
+            take_photo = False
+            for pt in picture_target:
+                if target == pt:
+                    take_photo = True
+
+            # Skip to next point if no photo should be taken
+            if not take_photo:
                 continue
+
 
             # Take and analyse photo
             if TASK2:
