@@ -85,7 +85,7 @@ def points_around_windmill(drone, windmill_pos):
 
 def is_almost_at_target(drone):
 
-    radius = 1  # Radius for almost at target
+    radius = 0.5  # Radius for almost at target
 
     distance_to_target = ((drone.target.x - drone.position.x)**2 +
                           (drone.target.y - drone.position.y)**2 +

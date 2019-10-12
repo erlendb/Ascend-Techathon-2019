@@ -96,6 +96,7 @@ class Inspecting(smach.State):
 
         first_run = True
 
+        print(sub_path)
 
         for target in sub_path:
 
@@ -115,7 +116,7 @@ class Inspecting(smach.State):
             # Checks if photo should be taken from this position
             take_photo = False
             for pt in picture_target:
-                if target == pt:
+                if target.x == pt.x and target.y == pt.y:
                     take_photo = True
 
             # Skip to next point if no photo should be taken
