@@ -184,7 +184,8 @@ class Ending_mission(smach.State):
                 #print()
 
 
-        while (abs(userdata.drone.velocity.z) > 0.8):
+        while (abs(userdata.drone.velocity.z) > 1.5):
+            print(userdata.drone.velocity)  # TODO: fjern denne
             continue
         userdata.drone.deactivate()
 
