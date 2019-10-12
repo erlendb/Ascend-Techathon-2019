@@ -13,7 +13,7 @@ class Super_point:
     y = 0
     z = 0
     yaw = 0
-    def __init__(self, x, y, yaw):
+    def __init__(self, x, y, yaw=0):
         self.x = x
         self.y = y
         self.yaw = yaw

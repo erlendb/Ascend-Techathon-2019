@@ -197,10 +197,11 @@ class Ending_mission(smach.State):
 def main():
     rospy.init_node('brute_force_one')
 
+    '''
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['mission_ended'])
 
-    sm.userdata.drone = SimDrone()
+    #sm.userdata.drone = SimDrone()
     sm.userdata.path = []
     sm.userdata.rust_reports = []
     sm.userdata.rust_score_dict = {}
@@ -233,7 +234,41 @@ def main():
 
 
     # Execute SMACH plan
-    sm.execute()
+    #sm.execute()
+    '''
+    '''
+
+
+    (0.0, 100.0): 2101} ok
+    (150.0, 100.0): 1422, ok
+    (-150.0, 100.0): 1252, ok
+    (225.0, 200.0): 350, ok
+    {(-225.0, 200.0): 262, ok
+    (0.0, -200.0): 135, ok
+    (75.0, 200.0): 122, ok
+    (75.0, -100.0): 84, ok
+    (-75.0, -100.0): 60, riktig
+    (-75.0, 200.0): 0, ok
+
+    '''
+    drone = SimDrone()
+
+    rust_reports = []
+    #rust_reports.append(build_rust_report_message(windmill_position, has_rust, rust_images))
+    rust_reports.append(build_rust_report_message(Super_point(0.0, 100.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(150.0, 100.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(-150.0, 100.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(225.0, 200.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(-225.0, 200.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(0.0, -200.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(75.0, 200.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(75.0, -100.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(-75.0, -100.0), True, []))
+    rust_reports.append(build_rust_report_message(Super_point(-75.0, 200.0), False, []))
+
+    drone.activate()
+    send_total_inspection_report(rust_reports)
+    drone.deactivate()
 
 
 if __name__ == '__main__':
