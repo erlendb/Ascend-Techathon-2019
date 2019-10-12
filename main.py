@@ -121,6 +121,7 @@ class Inspecting(smach.State):
 
         else:
             photo_id = 0
+            score_sum = 0
             for img in images:
                 score = rust_score(img)
 
@@ -132,9 +133,10 @@ class Inspecting(smach.State):
                 if score > RUST_THRESHOLD:
                     has_rust = True
                     rust_images.append(img)
+                    score_sum = score_sum + score
 
             # Save rust score for later sorting
-            userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score
+            userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score_sum
 
             # Save report for current windmill
             userdata.rust_reports.append(build_rust_report_message(windmill_position, has_rust, rust_images))
