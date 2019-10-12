@@ -54,7 +54,7 @@ def angle3pt(a, b, c):
     return ang + 360.0 if ang < 0.0 else ang
 
 ## Returnerer en liste med points(x, y, yaw) med lenght lik total_points. Maa kjøres i første bildeposisjon.
-def points_around_windmill(drone, windmill_pos): # need: import math
+def points_around_windmill(drone_pos, windmill_pos): # need: import math
     radius = RADIUS_AROUND_WINDMILL          # Avstand fra fyrtårn [m]
     total_points = 3    # Antall punkter rundt fyrtårnet. Funker med 1, 2, 3, 4, 6, 12.
     t = list((range(0, 360, int(360/12))))
@@ -67,8 +67,8 @@ def points_around_windmill(drone, windmill_pos): # need: import math
     index_array = list((range(int(12/total_points), 12, int(12/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
      # Første punkt er drone_pos!!
      # Finner vinkel for verdenskoordinater til dronekoordinater
-    angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone.position.x, drone.position.y))
-    point.append(Super_point(drone.position.x, drone.position.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
+    angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone_pos.x, drone_pos.y))
+    point.append(Super_point(drone_pos.x, drone_pos.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
     for i in index_array:
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
     return point
@@ -76,3 +76,15 @@ def points_around_windmill(drone, windmill_pos): # need: import math
 
 def score(report, score_dict):
     return score_dict[(report.position.x, report.position.y)]
+
+
+def next_target_is_left(drone_pos, target_pos, next_pos):
+    """
+    returns true if next_pos is left (from drone perspektive) of the line between drone_pos
+    and target_pos
+    """
+    a = drone_pos
+    b = target_pos
+    c = next_pos
+    return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) > 0
+

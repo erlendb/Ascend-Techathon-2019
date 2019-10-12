@@ -46,14 +46,14 @@ class Flying_to_target(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['arrived_at_landing_pos','arrived_at_windmill'],
-                            input_keys=['path', 'drone', 'current_windmill'],
-                            output_keys=['path', 'drone', 'current_windmill'])
+                            input_keys=['path', 'drone', 'current_windmill', 'windmill_path'],
+                            output_keys=['path', 'drone', 'current_windmill', 'windmill_path'])
 
     def execute(self, userdata):
 
         target = userdata.path.pop()
 
-        if target.x == 0 and target.y == 0: # target is launch pad
+        if target.x == 0 and target.y == 0:     # target is launch pad
             userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
         else:
             # Modify target such that drone stops in front of windmill
@@ -64,6 +64,16 @@ class Flying_to_target(smach.State):
             target_yaw = yaw_towards_windmill(Super_point(x_new, y_new, 0), target)
 
             userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
+
+            # calculate best path around windmill 
+            userdata.windmill_path = points_around_windmill(target, userdata.current_windmill)
+            if next_target_is_left(userdata.drone.position, target, userdata.path.peek()):
+                # flipps order of points, so that drone exits close to next target
+                tmp = userdata.windmill_path.pop()     
+                userdata.windmill_path.insert(1, tmp)
+
+
+
 
         # TODO: collision avoidance
 
@@ -80,23 +90,26 @@ class Inspecting(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['inspection_complete'],
-                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill'],
-                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill'])
+                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'windmill_path'],
+                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'windmill_path'])
 
     def execute(self, userdata):
-        sub_path = points_around_windmill(userdata.drone, userdata.current_windmill)
         images = []
-        has_rust = False
         rust_images = []
+        has_rust = False
+        first_target = True
 
+        for target in userdata.windmill_path:
 
-        for target in sub_path:
+            if not first_target:
 
-            # Fly to target
-            userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
+                # Fly to target
+                userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
 
-            while not is_at_target(userdata.drone) :
-                continue
+                while not is_at_target(userdata.drone) :
+                    continue
+
+            first_target = False
 
             # Take and analyse photo
             if TASK2:
@@ -193,6 +206,7 @@ def main():
     sm.userdata.rust_reports = []
     sm.userdata.rust_score_dict = {}
     sm.userdata.current_windmill = None
+    sm.userdata.windmill_path = []
 
 
     # Open the container
