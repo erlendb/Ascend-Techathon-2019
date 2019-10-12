@@ -3,9 +3,9 @@ import numpy as np
 
 def crop_base(image_array):
     """
-    Denne trengs IKKE å brukes fra API
+    Denne trengs IKKE aa brukes fra API
     rust_score bruker denne
-    se nedenfor for å finne rust_score
+    se nedenfor for aa finne rust_score
 
     """
 
