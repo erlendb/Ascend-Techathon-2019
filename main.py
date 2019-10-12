@@ -107,8 +107,7 @@ class Inspecting(smach.State):
 
                 while not is_at_target(userdata.drone):
                     continue
-                
-            first_target = False
+
 
             # Take and analyse photo
             if TASK2:
@@ -119,11 +118,19 @@ class Inspecting(smach.State):
                     rust_report = build_rust_report_message(userdata.current_windmill, has_rust, [img])
                     rospy.loginfo("Found rust on windmill")
                     send_single_inspection_report(rust_report)
+
+                    if first_target:
+                        x_new, y_new = get_closer_target(userdata.drone, userdata.current_windmill, 12)
+                        userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
+                        while not is_at_target(userdata.drone):
+                            continue
+                    
                     return 'inspection_complete'
 
             else:
                 images.append(userdata.drone.camera.image)
 
+            first_target = False
 
 
         if TASK2:
