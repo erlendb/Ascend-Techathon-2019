@@ -67,8 +67,8 @@ class Flying_to_target(smach.State):
 
             sub_path = points_around_windmill(Super_point(x_new, y_new, 0), userdata.current_windmill)
             dist = []
-            dist[0] = get_dist(userdata.path[0], sub_path[1])
-            dist[1] = get_dist(userdata.path[0], sub_path[2])
+            dist.append(get_dist(userdata.path[0], sub_path[1]))
+            dist.append(get_dist(userdata.path[0], sub_path[2]))
             if (dist[0] < dist[1]):
                 tmp = sub_path.pop(-1)
                 sub_path.insert(1, tmp)
