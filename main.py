@@ -12,9 +12,13 @@ from tsp_solver.greedy import solve_tsp
 from util import get_windmill_positions, build_rust_report_message, send_total_inspection_report, send_single_inspection_report
 from is_rust import is_rust
 from rust_score import rust_score
+import make_path
+from save_photos import save_photos
 
 
-RELATIVE_FLYING_HEIGT = 1
+TAKEOFF_HEIGHT = 1
+OPERATING_HEIGHT = 10
+LANDING_HEIGHT = 20
 RADIUS_AROUND_WINDMILL = 20
 
 class Super_point:
@@ -38,14 +42,14 @@ class Starting_mission(smach.State):
     def execute(self, userdata):
 
         userdata.drone.activate()
-        userdata.drone.takeoff(RELATIVE_FLYING_HEIGT)
+        userdata.drone.takeoff(TAKEOFF_HEIGHT)
 
         # Gets windmill position and makes a path that begins and ends at launch site
-        windmill_positions = get_windmill_positions()   
+        windmill_positions = get_windmill_positions()
         home_point = Super_point(0, 0, 0)
         windmill_positions.append(home_point)
         windmill_positions.insert(0, home_point)
-        userdata.path = make_path(windmill_positions)
+        userdata.path = make_path.make_path(windmill_positions)
 
         return 'startup_complete'
 
@@ -60,14 +64,15 @@ class Flying_to_target(smach.State):
     def execute(self, userdata):
 
         target = userdata.path.pop()
-        
+
         if target.x == 0 and target.y == 0: # target is launch pad
-            userdata.drone.set_target(target.x, target.y)
+            userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
         else:
             # Scare target such that drone stops in front of windmill
             userdata.current_windmill = target
             x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
-            userdata.drone.set_target(x_new, y_new)
+            target_yaw = yaw_towards_windmill(Super_point(x_new, y_new, 0), target)
+            userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
         # TODO: collision avoidance
 
@@ -95,22 +100,45 @@ class Inspecting(smach.State):
         for target in sub_path:
 
             # Fly to target
-            userdata.drone.set_target(target.x, target.y, yaw=target.yaw) 
-            
-            while not is_at_target(userdata.drone):
-                continue 
+            print("Yaw 1")
+            print(math.degrees(target.yaw))
+            userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
+
+            while not is_at_target(userdata.drone) :
+                continue
+
+            '''
+            print("is_at_yaw:")
+            yaw_diff = abs(userdata.drone.yaw - userdata.drone._setpoint_msg.yaw)
+            print(userdata.drone.yaw)
+            print(userdata.drone._setpoint_msg.yaw)
+            print(yaw_diff)
+
+
+            while not is_at_yaw(userdata.drone):
+                continue
+            '''
 
             # Take and analyse photo
+            print("Yaw 2")
+            print(math.degrees(userdata.drone.yaw))
             images.append(userdata.drone.camera.image)
 
 
         # Evaluate if/how much rust on windmill
-        RUST_THRESHOLD = 10
+        RUST_THRESHOLD = 50
 
         has_rust = False
         rust_images = []
+        photo_id = 0
         for img in images:
             score = rust_score(img)
+
+            # Lagre bilde og score
+            windmill_position = userdata.current_windmill
+            save_photos(windmill_position, photo_id, img, score)
+            photo_id = photo_id + 1
+
             if score > RUST_THRESHOLD:
                 has_rust = True
                 rust_images.append(img)
@@ -157,7 +185,7 @@ class Ending_mission(smach.State):
 
 
 
-
+'''
 def make_path(points):
     distances = []
     for i in range(0, len(points)):
@@ -176,7 +204,7 @@ def make_path(points):
         path.append(points[index])
 
     return path
-
+'''
 
 def analyse_photo(img):   # TODO: implement photo taking and analysis
     """
@@ -194,6 +222,21 @@ def is_at_target(drone):
         return True
 
     return False
+
+def is_at_yaw(drone):
+    yaw_diff = abs(drone.yaw - drone._setpoint_msg.yaw)
+    print("is_at_yaw :)")
+    print(yaw_diff)
+
+    if yaw_diff < 1:
+        return True
+    return False
+
+# Returnerer jaw mot windmøllen
+def yaw_towards_windmill(drone_pos, windmill_pos):
+    angle = angle3pt((windmill_pos.x, windmill_pos.y + 1), (windmill_pos.x, windmill_pos.y), (drone_pos.x, drone_pos.y))-90
+    yaw = math.radians(angle)
+    return yaw
 
 
 def get_closer_target(drone, target, distance=10):
@@ -216,19 +259,19 @@ def angle3pt(a, b, c):
 def points_around_windmill(drone, windmill_pos): # need: import math
     radius = RADIUS_AROUND_WINDMILL          # Avstand fra fyrtårn [m]
     total_points = 3    # Antall punkter rundt fyrtårnet. Funker med 1, 2, 3, 4, 6, 12.
-    t = list((range(0, 360, int(360/12)))) 
+    t = list((range(0, 360, int(360/12))))
     point = []
     x = []
     y = []
-    for i in range(len(t)):  # Lager 12 punkter med radius radius fra origo 
+    for i in range(len(t)):  # Lager 12 punkter med radius radius fra origo
         x.append(radius*(math.sin(math.radians(t[i]))))
         y.append(radius*(math.cos(math.radians(t[i]))))
     index_array = list((range(int(12/total_points), 12, int(12/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
      # Første punkt er drone_pos!!
      # Finner vinkel for verdenskoordinater til dronekoordinater
     angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone.position.x, drone.position.y))
-    point.append(Super_point(drone.position.x, drone.position.y, drone.yaw))  # Første punkt er drone_pos!!
-    for i in index_array: 
+    point.append(Super_point(drone.position.x, drone.position.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
+    for i in index_array:
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
     return point
 
