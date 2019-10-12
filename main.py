@@ -88,16 +88,19 @@ class Inspecting(smach.State):
         images = []
         has_rust = False
         rust_images = []
+        first_target = True
 
         for target in sub_path:
 
-            # Fly to target
-            userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
+            if not first_target:
 
+                # Fly to target
+                userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
 
-            while not is_at_target(userdata.drone) :
-                continue
+                while not is_at_target(userdata.drone) :
+                    continue
 
+            first_target = False
 
             # Take and analyse photo
             if TASK2:
@@ -112,7 +115,7 @@ class Inspecting(smach.State):
 
             else:
                 images.append(userdata.drone.camera.image)
-
+                
 
 
         if TASK2:
