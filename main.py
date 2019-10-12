@@ -17,7 +17,7 @@ from save_photos import save_photos
 from helper_functions import *
 
 TASK2 = False
-RUST_THRESHOLD = 20
+RUST_THRESHOLD = 1
 
 
 class Starting_mission(smach.State):
@@ -89,14 +89,23 @@ class Inspecting(smach.State):
         has_rust = False
         rust_images = []
 
+        print("vindmølle:")
+        print(userdata.current_windmill)
 
         for target in sub_path:
 
             # Fly to target
             userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
+            print("for")
+            print(userdata.drone.yaw)
+            print(target.yaw)
 
             while not is_at_target(userdata.drone) :
                 continue
+
+            print("etter")
+            print(userdata.drone.yaw)
+            print(target.yaw)
 
             # Take and analyse photo
             if TASK2:
@@ -120,20 +129,27 @@ class Inspecting(smach.State):
             send_single_inspection_report(rust_report)
 
         else:
-            photo_id = 0
+            #photo_id = 0
             score_sum = 0
             for img in images:
                 score = rust_score(img)
 
                 # Lagre bilde og score
-                windmill_position = userdata.current_windmill
-                save_photos(windmill_position, photo_id, img, score)
-                photo_id = photo_id + 1
+                #windmill_position = userdata.current_windmill
+                #save_photos(windmill_position, photo_id, img, score, totalScore)
+                #photo_id = photo_id + 1
 
                 if score > RUST_THRESHOLD:
                     has_rust = True
                     rust_images.append(img)
                     score_sum = score_sum + score
+
+            photo_id = 0
+            for img in images:
+                score = rust_score(img)
+                windmill_position = userdata.current_windmill
+                save_photos(windmill_position, photo_id, img, score, score_sum)
+                photo_id = photo_id + 1
 
             # Save rust score for later sorting
             userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score_sum

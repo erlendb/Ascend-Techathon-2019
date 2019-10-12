@@ -54,8 +54,8 @@ def crop_base(image_array):
     finalImage[:,:,1] = np.multiply(G,mask)
 
     finalImage[:,:,2] = np.multiply(B,mask)
-    
-    cv.drawContours(img, contours, 0, (0,0,255), 6)
+
+    #cv.drawContours(img, contours, 0, (0,0,255), 6)
 
     return finalImage
 
@@ -64,7 +64,7 @@ def getCentreLocation(cropped_img):
     _,finalImage = cv.threshold(gray_image,0,254, cv.THRESH_BINARY)
 
     M = cv.moments(finalImage)
- 
+
     # calculate x,y coordinate of center
     cX = int(M["m10"] / M["m00"])
     cY = int(M["m01"] / M["m00"])
@@ -87,9 +87,9 @@ def getWidthBase(cropped_img, centre):
 
 def rust_score(image_array):
     """
-    Function that calculates the rust score for a picture. 
+    Function that calculates the rust score for a picture.
 
-    input: image_array: pixel array in rgb format. Import cv2 and use cv2.imread("filename") then 
+    input: image_array: pixel array in rgb format. Import cv2 and use cv2.imread("filename") then
     pass it into this function
     return: rust_score, this returns the total number of white pixels found
     """
