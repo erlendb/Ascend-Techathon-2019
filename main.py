@@ -117,8 +117,8 @@ class Inspecting(smach.State):
                 if rust_score(img) > RUST_THRESHOLD:
                     # not necessary to check windmill further
                     has_rust = True
-                    rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
-                    rospy.loginfo("Sending rust report for task 2")
+                    rust_report = build_rust_report_message(userdata.current_windmill, has_rust, [img])
+                    rospy.loginfo("Found rust on windmill")
                     send_single_inspection_report(rust_report)
                     return 'inspection_complete'
 
@@ -129,7 +129,7 @@ class Inspecting(smach.State):
 
         if TASK2:
             rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
-            rospy.loginfo("Sending rust report for task 2")
+            rospy.loginfo("Found no rust on windmill")
             send_single_inspection_report(rust_report)
 
         else:
