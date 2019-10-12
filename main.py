@@ -108,6 +108,8 @@ class Inspecting(smach.State):
                     continue
             else:
                 while not is_almost_at_target(userdata.drone):
+                    yaw = yaw_towards_windmill(userdata.drone.position, userdata.current_windmill)
+                    userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=yaw)
                     continue
 
             # Checks if photo should be taken from this position

@@ -57,7 +57,7 @@ def angle3pt(a, b, c):
 def points_around_windmill(drone, windmill_pos): 
     # parameter for tuning
     radius = RADIUS_AROUND_WINDMILL          # Avstand fra fyrtårn [m]
-    total_points = 60
+    total_points = 12
     cut = 2/3    # Antall punkter rundt fyrtårnet. Funker med 1, 2, 3, 4, 6, 12.
 
     t = list((range(0, 360, int(360/total_points))))
