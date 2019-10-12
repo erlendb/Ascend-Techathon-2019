@@ -101,7 +101,7 @@ def rust_score(image_array):
     img = image_array
 
     #crop image, get closest windmill base
-    img = crop_base(img)
+    #img = crop_base(img)
 
 
     #Set hue, value, saturation parameters
@@ -118,7 +118,7 @@ def rust_score(image_array):
     low_val = 19
     upp_hue = 19
     upp_sat = 250
-    upp_val = 150
+    upp_val = 80
 
     #rgb image to hue, value saturation image
     hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
