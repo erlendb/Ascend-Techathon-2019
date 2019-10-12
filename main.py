@@ -16,7 +16,7 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = False
+TASK2 = True
 RUST_THRESHOLD = 20
 
 
