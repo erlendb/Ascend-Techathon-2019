@@ -67,7 +67,7 @@ class Flying_to_target(smach.State):
 
             # calculate best path around windmill 
             userdata.windmill_path = points_around_windmill(target, userdata.current_windmill)
-            if next_target_is_left(userdata.drone.position, target, userdata.path.peek()):
+            if next_target_is_left(userdata.drone.position, target, userdata.path[0]):
                 # flipps order of points, so that drone exits close to next target
                 tmp = userdata.windmill_path.pop()     
                 userdata.windmill_path.insert(1, tmp)
