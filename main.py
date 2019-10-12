@@ -46,8 +46,8 @@ class Flying_to_target(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['arrived_at_landing_pos','arrived_at_windmill'],
-                            input_keys=['path', 'drone', 'current_windmill'],
-                            output_keys=['path', 'drone', 'current_windmill'])
+                            input_keys=['path', 'drone', 'current_windmill', 'sub_path'],
+                            output_keys=['path', 'drone', 'current_windmill', 'sub_path'])
 
     def execute(self, userdata):
 
@@ -65,6 +65,8 @@ class Flying_to_target(smach.State):
 
             userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
+            userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), userdata.current_windmill)
+
         # TODO: collision avoidance
 
         while not is_at_target(userdata.drone):
@@ -80,17 +82,17 @@ class Inspecting(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['inspection_complete'],
-                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill'],
-                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill'])
+                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path'],
+                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path'])
 
     def execute(self, userdata):
-        sub_path = points_around_windmill(userdata.drone, userdata.current_windmill)
+        #sub_path = points_around_windmill(userdata.drone, userdata.current_windmill)
         images = []
         has_rust = False
         rust_images = []
         first_target = True
 
-        for target in sub_path:
+        for target in userdata.sub_path:
 
             if not first_target:
 
@@ -115,7 +117,7 @@ class Inspecting(smach.State):
 
             else:
                 images.append(userdata.drone.camera.image)
-                
+
 
 
         if TASK2:
@@ -195,6 +197,7 @@ def main():
     sm.userdata.rust_reports = []
     sm.userdata.rust_score_dict = {}
     sm.userdata.current_windmill = None
+    sm.userdata.sub_path = []
 
 
     # Open the container
