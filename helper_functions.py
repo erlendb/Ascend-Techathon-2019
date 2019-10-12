@@ -77,12 +77,6 @@ def points_around_windmill(position, windmill_pos): # need: import math
 def score(report, score_dict):
     return score_dict[(report.position.x, report.position.y)]
 
-def next_target_is_left(drone_pos, target_pos, next_pos):
-    """
-    returns true if next_pos is left (from drone perspektive) of the line between drone_pos
-    and target_pos
-    """
-    a = drone_pos
-    b = target_pos
-    c = next_pos
-    return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) > 0
+def get_dist(point1, point2):
+    distance = ((point1.x - point2.x)**2 + (point1.y - point2.y)**2)**0.5
+    return distance
