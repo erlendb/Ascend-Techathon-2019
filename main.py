@@ -90,7 +90,7 @@ class Inspecting(smach.State):
         rust_images = []
 
         # Defines points where phots should be taken
-        picture_target = []
+        picture_target = [sub_path[0]]
         picture_target.append(sub_path[-1])
         picture_target.append(sub_path[int(len(sub_path)/2)])
 
