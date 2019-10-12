@@ -2,7 +2,7 @@ import math
 
 TAKEOFF_HEIGHT = 1
 OPERATING_HEIGHT = 10
-LANDING_HEIGHT = 20
+LANDING_HEIGHT = 17
 RADIUS_AROUND_WINDMILL = 20
 
 class Super_point:
@@ -25,7 +25,7 @@ def is_at_target(drone):
         return True
 
     return False
-    
+
 
 # Returnerer jaw mot windmøllen
 def yaw_towards_windmill(drone_pos, windmill_pos):
