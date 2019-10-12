@@ -58,7 +58,7 @@ class Flying_to_target(smach.State):
         else:
             # Modify target such that drone stops in front of windmill
             userdata.current_windmill = target
-            x_new, y_new = get_closer_target(userdata.drone, target, 12)    # 12 fordi vi maa komme naerme nok for reg.
+            x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
 
             # find desired yaw
             target_yaw = yaw_towards_windmill(Super_point(x_new, y_new, 0), target)
@@ -97,16 +97,18 @@ class Inspecting(smach.State):
         images = []
         rust_images = []
         has_rust = False
+        first_target = True
 
         for target in userdata.windmill_path:
 
+            if not first_target:
+                # Fly to target
+                userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
 
-            # Fly to target
-            userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
-
-            while not is_at_target(userdata.drone) :
-                continue
-
+                while not is_at_target(userdata.drone):
+                    continue
+                
+            first_target = False
 
             # Take and analyse photo
             if TASK2:
