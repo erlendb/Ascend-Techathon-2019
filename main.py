@@ -5,7 +5,7 @@ import rospy
 import smach
 import smach_ros
 import math
-
+from operator import attrgetter
 
 from dronelib import SimDrone
 from tsp_solver.greedy import solve_tsp
@@ -115,12 +115,14 @@ class Inspecting(smach.State):
                 has_rust = True
                 rust_images.append(img)
 
+        # TASK 3 REPORTING
         # Save rust score for later sorting
-        #userdata.rust_score_dict[current_windmill] = rust_score
+        #userdata.rust_score_dict[(current_windmill.x, current_windmill.y)] = rust_score
 
         # Save report for current windmill
         #userdata.rust_reports.append(build_rust_report_message(userdata.current_windmill, has_rust, rust_images))
 
+        # TASK 2 REPORTING 
         rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
         rospy.loginfo("Sending rust report for task 2")
         send_single_inspection_report(rust_report)
@@ -132,17 +134,20 @@ class Ending_mission(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['mission_ended'],
-                            input_keys=['path', 'drone', 'rust_reports'],
-                            output_keys=['path', 'drone', 'rust_reports'])
+                            input_keys=['path', 'drone', 'rust_reports', 'rust_score_dict'],
+                            output_keys=['path', 'drone', 'rust_reports', 'rust_score_dict'])
 
     def execute(self, userdata):
         userdata.drone.land()
 
-        # Rapportere
+        # TASK 3 REPORTING
+        # sorts reports based on return value from function score
+        # reports = userdata.rust_reports
+        # sortet_rust_reports = sorted(reports, key=lambda report: score(report, userdata.rust_score_dict))
         # rospy.loginfo("Sending rust reports for task 3")
-        # send_total_inspection_report(userdata.rust_reports)
+        # send_total_inspection_report(sortet_rust_reports)
 
-        while (abs(userdata.drone.velocity.z) > 0.5):
+        while (abs(userdata.drone.velocity.z) > 0.8):
             continue
         userdata.drone.deactivate()
 
@@ -226,6 +231,10 @@ def points_around_windmill(drone, windmill_pos): # need: import math
     for i in index_array: 
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
     return point
+
+
+def score(report, score_dict):
+    return score_dict[(report.position.x, report.position.y)]
 
 
 
