@@ -16,7 +16,7 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = False
+TASK2 = True
 RUST_THRESHOLD = 1
 
 
@@ -89,23 +89,15 @@ class Inspecting(smach.State):
         has_rust = False
         rust_images = []
 
-        print("vindmølle:")
-        print(userdata.current_windmill)
-
         for target in sub_path:
 
             # Fly to target
             userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
-            print("for")
-            print(userdata.drone.yaw)
-            print(target.yaw)
+
 
             while not is_at_target(userdata.drone) :
                 continue
 
-            print("etter")
-            print(userdata.drone.yaw)
-            print(target.yaw)
 
             # Take and analyse photo
             if TASK2:
@@ -114,7 +106,7 @@ class Inspecting(smach.State):
                     # not necessary to check windmill further
                     has_rust = True
                     rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
-                    rospy.loginfo("Sending rust report for task 2")
+                    rospy.loginfo("Found rust on windmill - task2")
                     send_single_inspection_report(rust_report)
                     return 'inspection_complete'
 
@@ -125,7 +117,7 @@ class Inspecting(smach.State):
 
         if TASK2:
             rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
-            rospy.loginfo("Sending rust report for task 2")
+            rospy.loginfo("Found no rust on windmill - task 2")
             send_single_inspection_report(rust_report)
 
         else:
@@ -175,19 +167,10 @@ class Ending_mission(smach.State):
             reports = userdata.rust_reports
             sortet_rust_reports = sorted(reports, reverse=True, key=lambda report: score(report, userdata.rust_score_dict))
             send_total_inspection_report(sortet_rust_reports)
-            print("sortet_rust_reports")
-            #print(sortet_rust_reports)
-            print("userdata.rust_score_dict")
-            print(userdata.rust_score_dict)
             rospy.loginfo("Sending rust reports for task 3")
-            print("Report.score:")
-            for report in sortet_rust_reports:
-                print("hei")
-                print(report.position)
-                #print()
 
 
-        while (abs(userdata.drone.velocity.z) > 0.8):
+        while (abs(userdata.drone.velocity.z) > 1.5):
             continue
         userdata.drone.deactivate()
 
