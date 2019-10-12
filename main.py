@@ -16,7 +16,7 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = True
+TASK2 = False
 RUST_THRESHOLD = 20
 
 
@@ -62,7 +62,7 @@ class Flying_to_target(smach.State):
 
             # find desired yaw
             target_yaw = yaw_towards_windmill(Super_point(x_new, y_new, 0), target)
-            
+
             userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
         # TODO: collision avoidance
@@ -113,11 +113,12 @@ class Inspecting(smach.State):
                 images.append(userdata.drone.camera.image)
 
 
+
         if TASK2:
             rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
             rospy.loginfo("Sending rust report for task 2")
             send_single_inspection_report(rust_report)
-        
+
         else:
             photo_id = 0
             for img in images:
@@ -131,13 +132,12 @@ class Inspecting(smach.State):
                 if score > RUST_THRESHOLD:
                     has_rust = True
                     rust_images.append(img)
-                
-                # Save rust score for later sorting
-                userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = rust_score
 
-                # Save report for current windmill
-                userdata.rust_reports.append(build_rust_report_message(windmill_position, has_rust, rust_images))
+            # Save rust score for later sorting
+            userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score
 
+            # Save report for current windmill
+            userdata.rust_reports.append(build_rust_report_message(windmill_position, has_rust, rust_images))
 
         return 'inspection_complete'
 
@@ -155,9 +155,19 @@ class Ending_mission(smach.State):
         if not TASK2:
             # sorts reports based on return value from function score
             reports = userdata.rust_reports
-            sortet_rust_reports = sorted(reports, key=lambda report: score(report, userdata.rust_score_dict))
-            rospy.loginfo("Sending rust reports for task 3")
+            sortet_rust_reports = sorted(reports, reverse=True, key=lambda report: score(report, userdata.rust_score_dict))
             send_total_inspection_report(sortet_rust_reports)
+            print("sortet_rust_reports")
+            #print(sortet_rust_reports)
+            print("userdata.rust_score_dict")
+            print(userdata.rust_score_dict)
+            rospy.loginfo("Sending rust reports for task 3")
+            print("Report.score:")
+            for report in sortet_rust_reports:
+                print("hei")
+                print(report.position)
+                #print()
+
 
         while (abs(userdata.drone.velocity.z) > 0.8):
             continue
@@ -172,8 +182,6 @@ class Ending_mission(smach.State):
 
 def main():
     rospy.init_node('brute_force_one')
-
-    # TODO: set up smach correctly with all states
 
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['mission_ended'])

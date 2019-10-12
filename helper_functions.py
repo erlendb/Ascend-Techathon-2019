@@ -1,8 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import math
 
 TAKEOFF_HEIGHT = 1
 OPERATING_HEIGHT = 10
-LANDING_HEIGHT = 17
+LANDING_HEIGHT = 16
 RADIUS_AROUND_WINDMILL = 20
 
 class Super_point:
