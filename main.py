@@ -16,7 +16,7 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = False
+TASK2 = True
 RUST_THRESHOLD = 20
 
 
@@ -95,8 +95,6 @@ class Inspecting(smach.State):
         picture_target.append(sub_path[int(len(sub_path)/2)])
 
         first_run = True
-
-        print(sub_path)
 
         for target in sub_path:
 

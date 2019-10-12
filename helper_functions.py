@@ -6,7 +6,7 @@ import math
 TAKEOFF_HEIGHT = 1
 OPERATING_HEIGHT = 10
 LANDING_HEIGHT = 16
-RADIUS_AROUND_WINDMILL = 20
+RADIUS_AROUND_WINDMILL = 17
 
 class Super_point:
     x = 0
@@ -58,7 +58,7 @@ def points_around_windmill(drone, windmill_pos):
     # parameter for tuning
     radius = RADIUS_AROUND_WINDMILL          # Avstand fra fyrtårn [m]
     total_points = 12
-    cut = 2/3    # Antall punkter rundt fyrtårnet. Funker med 1, 2, 3, 4, 6, 12.
+    cut = 2.0/3.0    # Antall punkter rundt fyrtårnet. Funker med 1, 2, 3, 4, 6, 12.
 
     t = list((range(0, 360, int(360/total_points))))
     point = []
@@ -70,7 +70,7 @@ def points_around_windmill(drone, windmill_pos):
         y.append(radius*(math.cos(math.radians(t[i]))))
 
     index_array = list((range(int(total_points/total_points), int(math.ceil(total_points*cut)), int(total_points/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
-    
+    print(index_array)
     # Første punkt er drone_pos!!
     # Finner vinkel for verdenskoordinater til dronekoordinater
     angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone.position.x, drone.position.y))
@@ -85,11 +85,12 @@ def points_around_windmill(drone, windmill_pos):
 
 def is_almost_at_target(drone):
 
-    radius = 0.5  # Radius for almost at target
+    radius = 1  # Radius for almost at target
 
     distance_to_target = ((drone.target.x - drone.position.x)**2 +
                           (drone.target.y - drone.position.y)**2 +
                           (drone.target.z - drone.position.z)**2)**0.5
+    velocity = (drone.velocity.x**2 + drone.velocity.y**2 + drone.velocity.z**2)**0.5
 
     if distance_to_target < radius:
         return True
