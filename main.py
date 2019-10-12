@@ -18,7 +18,7 @@ from save_photos import save_photos
 
 TAKEOFF_HEIGHT = 1
 OPERATING_HEIGHT = 10
-LANDING_HEIGHT = 30
+LANDING_HEIGHT = 20
 RADIUS_AROUND_WINDMILL = 20
 
 class Super_point:
@@ -71,7 +71,8 @@ class Flying_to_target(smach.State):
             # Scare target such that drone stops in front of windmill
             userdata.current_windmill = target
             x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
-            userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT)
+            target_yaw = yaw_towards_windmill(Super_point(x_new, y_new, 0), target)
+            userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
         # TODO: collision avoidance
 
@@ -99,12 +100,28 @@ class Inspecting(smach.State):
         for target in sub_path:
 
             # Fly to target
+            print("Yaw 1")
+            print(math.degrees(target.yaw))
             userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
 
-            while not is_at_target(userdata.drone):
+            while not is_at_target(userdata.drone) :
                 continue
 
+            '''
+            print("is_at_yaw:")
+            yaw_diff = abs(userdata.drone.yaw - userdata.drone._setpoint_msg.yaw)
+            print(userdata.drone.yaw)
+            print(userdata.drone._setpoint_msg.yaw)
+            print(yaw_diff)
+
+
+            while not is_at_yaw(userdata.drone):
+                continue
+            '''
+
             # Take and analyse photo
+            print("Yaw 2")
+            print(math.degrees(userdata.drone.yaw))
             images.append(userdata.drone.camera.image)
 
 
@@ -201,6 +218,21 @@ def is_at_target(drone):
 
     return False
 
+def is_at_yaw(drone):
+    yaw_diff = abs(drone.yaw - drone._setpoint_msg.yaw)
+    print("is_at_yaw :)")
+    print(yaw_diff)
+
+    if yaw_diff < 1:
+        return True
+    return False
+
+# Returnerer jaw mot windmøllen
+def yaw_towards_windmill(drone_pos, windmill_pos):
+    angle = angle3pt((windmill_pos.x, windmill_pos.y + 1), (windmill_pos.x, windmill_pos.y), (drone_pos.x, drone_pos.y))-90
+    yaw = math.radians(angle)
+    return yaw
+
 
 def get_closer_target(drone, target, distance=10):
     diff = (drone.position.x - target.x, drone.position.y - target.y)
@@ -233,7 +265,7 @@ def points_around_windmill(drone, windmill_pos): # need: import math
      # Første punkt er drone_pos!!
      # Finner vinkel for verdenskoordinater til dronekoordinater
     angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone.position.x, drone.position.y))
-    point.append(Super_point(drone.position.x, drone.position.y, drone.yaw))  # Første punkt er drone_pos!!
+    point.append(Super_point(drone.position.x, drone.position.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
     for i in index_array:
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
     return point
