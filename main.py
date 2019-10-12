@@ -16,7 +16,7 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = True
+TASK2 = False
 RUST_THRESHOLD = 1
 
 
@@ -150,9 +150,9 @@ class Inspecting(smach.State):
                     score_sum = score_sum + score
 
             photo_id = 0
+            windmill_position = userdata.current_windmill
             for img in images:
                 score = rust_score(img)
-                windmill_position = userdata.current_windmill
                 save_photos(windmill_position, photo_id, img, score, score_sum)
                 photo_id = photo_id + 1
 

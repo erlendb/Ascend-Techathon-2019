@@ -36,11 +36,14 @@ def crop_base(image_array):
 
     #get max contour
     maxContour = 0
+    maxContourData = 0
     for contour in contours:
         contourSize = cv.contourArea(contour)
         if contourSize > maxContour:
             maxContour = contourSize
             maxContourData = contour
+        else:
+            print("maxContourData ikke satt! aka 0, i base_crop()")
 
     # Create a mask from the largest contour
     mask = np.zeros_like(mask)
@@ -102,12 +105,20 @@ def rust_score(image_array):
 
 
     #Set hue, value, saturation parameters
+    ''' 22
     low_hue = 2
     low_sat = 133
     low_val = 19
     upp_hue = 19
     upp_sat = 240
     upp_val = 125
+    '''
+    low_hue = 2
+    low_sat = 140
+    low_val = 19
+    upp_hue = 19
+    upp_sat = 250
+    upp_val = 150
 
     #rgb image to hue, value saturation image
     hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
