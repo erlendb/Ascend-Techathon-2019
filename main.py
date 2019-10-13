@@ -65,14 +65,7 @@ class Flying_to_target(smach.State):
 
             userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
-            sub_path = points_around_windmill(Super_point(x_new, y_new, 0), userdata.current_windmill)
-            dist = []
-            dist.append(get_dist(userdata.path[0], sub_path[1]))
-            dist.append(get_dist(userdata.path[0], sub_path[2]))
-            if (dist[0] < dist[1]):
-                tmp = sub_path.pop(-1)
-                sub_path.insert(1, tmp)
-            userdata.sub_path = sub_path
+            userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), userdata.current_windmill)
 
 
         # TODO: collision avoidance
@@ -94,20 +87,33 @@ class Inspecting(smach.State):
                             output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path'])
 
     def execute(self, userdata):
-        #sub_path = points_around_windmill(userdata.drone, userdata.current_windmill)
+        sub_path = userdata.sub_path
         images = []
         has_rust = False
         rust_images = []
         first_target = True
 
+        # Defines points where phots should be taken
+        picture_target = [sub_path[0]]
+        picture_target.append(sub_path[-1])
+        picture_target.append(sub_path[int(len(sub_path)/2)])
+
         for target in userdata.sub_path:
 
             if not first_target:
+                take_photo = False
+                for pt in picture_target:
+                    if target.x == pt.x and target.y == pt.y:
+                        take_photo = True
 
-                # Fly to target
-                userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
-
-                while not is_at_target(userdata.drone) :
+                if take_photo:
+                    userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
+                    while not is_at_target(userdata.drone):
+                        continue
+                else:
+                    userdata.drone.set_target(target.x, target.y, OPERATING_HEIGHT, yaw=target.yaw)
+                    while not is_almost_at_target(userdata.drone):
+                        continue
                     continue
 
             first_target = False
