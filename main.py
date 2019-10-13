@@ -16,8 +16,6 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = False
-RUST_THRESHOLD = 1
 
 
 class Starting_mission(smach.State):
@@ -56,7 +54,7 @@ class Flying_to_target(smach.State):
         if target.x == 0 and target.y == 0: # target is launch pad
             userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
         else:
-            # Save windmill pos for use in Inspection 
+            # Save windmill pos for use in Inspection
             userdata.current_windmill = target
             userdata.next_windmill = userdata.path[-1]
 
@@ -130,13 +128,13 @@ class Inspecting(smach.State):
             # Take and analyse photo
             if TASK2:
                 img = userdata.drone.camera.image
-                if rust_score(img) > RUST_THRESHOLD:
+                if rust_score(img, weighing=False) > RUST_THRESHOLD:
                     # not necessary to check windmill further
                     has_rust = True
                     rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
                     rospy.loginfo("Found rust on windmill - task2")
                     send_single_inspection_report(rust_report)
-                    return 'inspection_complete'
+                    picture_target = []
 
             else:
                 images.append(userdata.drone.camera.image)
@@ -147,6 +145,7 @@ class Inspecting(smach.State):
             rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
             rospy.loginfo("Found no rust on windmill - task 2")
             send_single_inspection_report(rust_report)
+            return 'inspection_complete'
 
         else:
 
@@ -158,18 +157,20 @@ class Inspecting(smach.State):
             windmill_position = userdata.current_windmill
 
             # Sjekk bilder fra windillen etter rust
+            scorearray = []
             for img in images:
                 score = rust_score(img)
+                scorearray.append(score)
 
                 if score > RUST_THRESHOLD:
                     has_rust = True
                     rust_images.append(img)
                     score_sum = score_sum + score
 
+            for i in range(0, len(images)):
                 # Lagre bilde og score
-                save_photos(windmill_position, photo_id, img, score, score_sum)
-                photo_id = photo_id + 1
-                
+                save_photos(windmill_position, i, images[i], score[i], score_sum)
+
 
             # Save rust score for later sorting
             userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score_sum

@@ -113,7 +113,7 @@ def weighing_vertical(y, centreY, height_base, max_weight):
     max_weight = float(max_weight)
     height_base = float(height_base)
 
-    MOVE_CENTRE_Y = 110
+    MOVE_CENTRE_Y = 120
 
     centreY = centreY + MOVE_CENTRE_Y
 
@@ -159,6 +159,10 @@ def weighing_horizontal(x, centreX, width, max_weight):
 
     x_local = abs(x_local)
     r = width/2
+
+    if x_local/r >= 1.0:
+        return max_weight
+
     theta = np.arccos(x_local/r)
     weight = 1/(np.sin(theta))
 
@@ -172,7 +176,7 @@ def addWeighing(rust_mask, centre, cropped_img):
 
     TRESHOLD_WIDTH_MAX = 250
     TRESHOLD_WIDTH_MIN = 150
-    MAX_HORIZONTAL_WEIGHT = 5 #4 for 26. 5 for 26
+    MAX_HORIZONTAL_WEIGHT = 6 #4 for 26. 5 for 26
     MAX_VERTICAL_WEIGHT = 3
 
 
@@ -207,7 +211,7 @@ def addWeighing(rust_mask, centre, cropped_img):
 
 
 
-def rust_score(image_array):
+def rust_score(image_array, weighing=True):
     """
     Function that calculates the rust score for a picture.
 
@@ -249,6 +253,9 @@ def rust_score(image_array):
 
     #testing weighing below this
     centre = getCentreLocation(img)
-    final_score_with_weight = addWeighing(mask, centre, img)
+    if weighing:
+        final_score_with_weight = addWeighing(mask, centre, img)
+    else:
+        final_score_with_weight = rust_score
 
     return final_score_with_weight
