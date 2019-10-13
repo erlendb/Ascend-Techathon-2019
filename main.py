@@ -77,19 +77,7 @@ class Flying_to_target(smach.State):
         # TODO: collision avoidance
 
         while not is_at_target(userdata.drone):
-            for current_windmill in userdata.windmill_list:
-                if is_collision(userdata.drone, current_windmill):  # Sett inn og dobbelsjekk funskjonen
-                    next_target = userdata.path[-1]
-                    angle = angle3pt((current_windmill.x, current_windmill.y), (userdata.drone.position.x, userdata.drone.position.y), (next_target.x, next_target.y))
-                    if math.sin(math.radians(angle)) > 0:
-                        userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), current_windmill, clockwise=True)
-                    else:
-                        userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), current_windmill, cut=3.0/4.0, total_points=12, clockwise=False)
-                        for new_target in userdata.sub_path:
-                            userdata.drone.set_target(new_target.x, new_target.y) # VIl holde samme yaw?
-                            while not is_almost_at_target(userdata.drone):  # Sett inn og dobbelsjekk funksjonen
-                                continue  # er continue på riktig plass??
-        
+            continue
 
         if not userdata.path:   # no more targets in path => drone is back home
             return 'arrived_at_landing_pos'
