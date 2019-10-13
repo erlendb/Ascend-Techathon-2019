@@ -84,8 +84,8 @@ def tsp(points):
     Returns:
         A tuple, (cost, path).
     """
-    print("tsp-distances")
-    print(dists)
+    #print("tsp-distances")
+    #print(dists)
     n = len(dists)
 
     # Maps each subset of the nodes to the cost to reach that subset, as well

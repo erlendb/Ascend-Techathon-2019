@@ -16,8 +16,6 @@ import make_path
 from save_photos import save_photos
 from helper_functions import *
 
-TASK2 = False
-RUST_THRESHOLD = 1
 
 
 class Starting_mission(smach.State):
@@ -130,13 +128,13 @@ class Inspecting(smach.State):
             # Take and analyse photo
             if TASK2:
                 img = userdata.drone.camera.image
-                if rust_score(img) > RUST_THRESHOLD:
+                if rust_score(img, weighing=False) > RUST_THRESHOLD:
                     # not necessary to check windmill further
                     has_rust = True
                     rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
                     rospy.loginfo("Found rust on windmill - task2")
                     send_single_inspection_report(rust_report)
-                    return 'inspection_complete'
+                    picture_target = []
 
             else:
                 images.append(userdata.drone.camera.image)
@@ -147,6 +145,7 @@ class Inspecting(smach.State):
             rust_report = build_rust_report_message(userdata.current_windmill, has_rust, rust_images)
             rospy.loginfo("Found no rust on windmill - task 2")
             send_single_inspection_report(rust_report)
+            return 'inspection_complete'
 
         else:
 

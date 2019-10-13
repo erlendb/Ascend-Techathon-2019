@@ -3,10 +3,17 @@
 
 import math
 
+TASK2 = True
+
+RUST_THRESHOLD = 1
+if TASK2:
+    RUST_THRESHOLD = 20
 TAKEOFF_HEIGHT = 2
 OPERATING_HEIGHT = 8.5
 LANDING_HEIGHT = 16
 RADIUS_AROUND_WINDMILL = 18
+if TASK2:
+    RADIUS_AROUND_WINDMILL = 18
 
 class Super_point:
     x = 0
@@ -43,7 +50,7 @@ def is_collision(drone, current_windmill):
 
 def is_almost_at_target(drone):
 
-    radius = 6  # Radius for almost at target
+    radius = 7  # Radius for almost at target
 
     distance_to_target = ((drone.target.x - drone.position.x)**2 +
                           (drone.target.y - drone.position.y)**2 +
