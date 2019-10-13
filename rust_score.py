@@ -177,7 +177,7 @@ def addWeighing(rust_mask, centre, cropped_img):
     TRESHOLD_WIDTH_MAX = 250
     TRESHOLD_WIDTH_MIN = 150
     MAX_HORIZONTAL_WEIGHT = 6 #4 for 26. 5 for 26
-    MAX_VERTICAL_WEIGHT = 2.5
+    MAX_VERTICAL_WEIGHT = 2.2
 
 
     num_rows = len(rust_mask)
