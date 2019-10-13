@@ -121,3 +121,11 @@ def score(report, score_dict):
 def get_dist(point1, point2):
     distance = ((point1.x - point2.x)**2 + (point1.y - point2.y)**2)**0.5
     return distance
+
+
+def direct_travel_allowed(drone_pos, current_windmill, next_windmill):
+    angle = angle3pt((drone_pos.x, drone_pos.y), (current_windmill.x, current_windmill.y), (next_windmill.x, next_windmill.y))
+    if angle > 120 or (angle > 240 and angle <= 360):
+        return True
+    else:
+        return False
