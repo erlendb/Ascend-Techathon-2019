@@ -56,7 +56,7 @@ class Flying_to_target(smach.State):
         if target.x == 0 and target.y == 0: # target is launch pad
             userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
         else:
-            # Save windmill pos for use in Inspection 
+            # Save windmill pos for use in Inspection
             userdata.current_windmill = target
             userdata.next_windmill = userdata.path[-1]
 
@@ -169,7 +169,7 @@ class Inspecting(smach.State):
                 # Lagre bilde og score
                 save_photos(windmill_position, photo_id, img, score, score_sum)
                 photo_id = photo_id + 1
-                
+
 
             # Save rust score for later sorting
             userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score_sum

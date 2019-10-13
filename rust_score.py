@@ -113,7 +113,7 @@ def weighing_vertical(y, centreY, height_base, max_weight):
     max_weight = float(max_weight)
     height_base = float(height_base)
 
-    MOVE_CENTRE_Y = 110
+    MOVE_CENTRE_Y = 120
 
     centreY = centreY + MOVE_CENTRE_Y
 
