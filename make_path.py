@@ -40,8 +40,6 @@ def make_path2(points):
     for i in range(0, len(points)):
         index = route[i]
         path.append(points[index])
-    print(path)
-    print(makepath1(points))
     return path
 
 # Calculate the euclidian distance in n-space of the route r traversing cities c, ending at the path start.

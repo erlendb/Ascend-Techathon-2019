@@ -123,7 +123,7 @@ def weighing_vertical(y, centreY, height_base, max_weight):
 
     if(height_base < 400):
         height_base = 400
-        print("unexptected heigh of base, weighing vertical")
+        #print("unexptected heigh of base, weighing vertical")
 
     relative_y = centreY - y
     relative_y = float(relative_y)
@@ -153,7 +153,7 @@ def weighing_horizontal(x, centreX, width, max_weight):
         return 1.0
 
     if(x_local*2 > width):
-        print("error in weighing func, x coordinate out of range")
+        #print("error in weighing func, x coordinate out of range")
         return 1.0
 
 

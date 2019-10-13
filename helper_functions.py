@@ -3,7 +3,7 @@
 
 import math
 
-TASK2 = True
+TASK2 = False
 
 RUST_THRESHOLD = 1
 if TASK2:

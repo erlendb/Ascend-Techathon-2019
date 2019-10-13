@@ -179,7 +179,7 @@ class Inspecting(smach.State):
             photo_id = 0
             for img in images:
                 # Lagre bilde og score
-                save_photos(windmill_position, photo_id, img, scorearray[photo_id], score_sum)
+                #save_photos(windmill_position, photo_id, img, scorearray[photo_id], score_sum)
                 photo_id = photo_id + 1
 
 

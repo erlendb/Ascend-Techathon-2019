@@ -11,7 +11,7 @@ import cv2 as cv
 
 def save_photos(windmill_position, photo_id, img, score, totalScore):
     filename = 'rustimg-'+str(int(totalScore))+'---'+str(windmill_position.x)+'-'+str(windmill_position.y)+'---'+str(photo_id)+'---'+str(int(score))+'.jpg'
-    print(filename)
+    #print(filename)
 
 
     x_pos_str = "x_pos: " + str(windmill_position.x)
