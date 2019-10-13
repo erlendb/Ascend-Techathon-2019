@@ -36,30 +36,37 @@ def crop_base(image_array):
     _, contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
 
     #quick fix for aa sette maxCountorData
+    '''
     maxContourData = 0
     for contor in contours:
         maxContourData = contor
+    '''
 
     #get max contour
     maxContour = 0
+    flag = False
     for contour in contours:
         contourSize = cv.contourArea(contour)
         if contourSize > maxContour:
             maxContour = contourSize
             maxContourData = contour
+            flag = True
 
-    # Create a mask from the largest contour
-    mask = np.zeros_like(mask)
-    cv.fillPoly(mask,[maxContourData],1)
+    if flag:
+        # Create a mask from the largest contour
+        mask = np.zeros_like(mask)
+        cv.fillPoly(mask,[maxContourData],1)
 
-    # Use mask to crop data from original image
-    finalImage = np.zeros_like(img)
+        # Use mask to crop data from original image
+        finalImage = np.zeros_like(img)
 
-    finalImage[:,:,0] = np.multiply(R,mask)
+        finalImage[:,:,0] = np.multiply(R,mask)
 
-    finalImage[:,:,1] = np.multiply(G,mask)
+        finalImage[:,:,1] = np.multiply(G,mask)
 
-    finalImage[:,:,2] = np.multiply(B,mask)
+        finalImage[:,:,2] = np.multiply(B,mask)
+    else:
+        finalImage = img
 
 
 
