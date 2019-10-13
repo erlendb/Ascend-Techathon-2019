@@ -68,7 +68,7 @@ def angle3pt(a, b, c):
     return ang + 360.0 if ang < 0.0 else ang
 
 
-def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, radius=RADIUS_AROUND_WINDMILL): 
+def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, radius=RADIUS_AROUND_WINDMILL, clockwise=True): 
 
     t = list((range(0, 360, int(360/total_points))))
     point = []
@@ -76,7 +76,10 @@ def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, 
     y = []
 
     for i in range(len(t)):  # Lager punkter med radius radius fra origo
-        x.append(radius*(math.sin(math.radians(t[i]))))
+        if clockwise:
+            x.append(radius*(math.sin(math.radians(t[i]))))
+        else:
+            x.append(radius*(-math.sin(math.radians(t[i]))))
         y.append(radius*(math.cos(math.radians(t[i]))))
 
     index_array = list((range(int(total_points/total_points), int(math.ceil(total_points*cut)) + 1, int(total_points/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
