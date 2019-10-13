@@ -30,6 +30,17 @@ def is_at_target(drone):
     return False
 
 
+def is_collision(drone, current_windmill):
+    detection_radius = RADIUS_AROUND_WINDMILL-10
+    distance_to_target = ((current_windmill.x - drone.position.x)**2 +
+                          (current_windmill.y - drone.position.y)**2)**0.5
+
+    if distance_to_target < detection_radius:
+        return True
+
+    return False
+
+
 def is_almost_at_target(drone):
 
     radius = 6  # Radius for almost at target
@@ -68,7 +79,7 @@ def angle3pt(a, b, c):
     return ang + 360.0 if ang < 0.0 else ang
 
 
-def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, radius=RADIUS_AROUND_WINDMILL, clockwise=True): 
+def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, radius=RADIUS_AROUND_WINDMILL, clockwise=True):
 
     t = list((range(0, 360, int(360/total_points))))
     point = []
@@ -91,16 +102,16 @@ def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, 
         y.append(radius*(math.cos(math.radians(t[i]))))
 
     index_array = list((range(int(total_points/total_points), int(math.ceil(total_points*cut)) + 1, int(total_points/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
-    
+
     # Første punkt er drone_pos!!
     # Finner vinkel for verdenskoordinater til dronekoordinater
     angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (position.x, position.y))
-    
+
     point.append(Super_point(position.x, position.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
-    
+
     for i in index_array:
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
-    
+
     return point
 
 

@@ -113,7 +113,7 @@ def weighing_vertical(y, centreY, height_base, max_weight):
     max_weight = float(max_weight)
     height_base = float(height_base)
 
-    MOVE_CENTRE_Y = 100
+    MOVE_CENTRE_Y = 110
 
     centreY = centreY + MOVE_CENTRE_Y
 
@@ -172,7 +172,7 @@ def addWeighing(rust_mask, centre, cropped_img):
 
     TRESHOLD_WIDTH_MAX = 250
     TRESHOLD_WIDTH_MIN = 150
-    MAX_HORIZONTAL_WEIGHT = 4
+    MAX_HORIZONTAL_WEIGHT = 5 #4 for 26. 5 for 26
     MAX_VERTICAL_WEIGHT = 3
 
 

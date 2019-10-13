@@ -24,8 +24,8 @@ class Starting_mission(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['startup_complete'],
-                            input_keys=['path', 'drone'],
-                            output_keys=['path', 'drone'])
+                            input_keys=['path', 'drone', 'windmill_list'],
+                            output_keys=['path', 'drone', 'windmill_list'])
 
     def execute(self, userdata):
         userdata.drone.activate()
@@ -33,6 +33,7 @@ class Starting_mission(smach.State):
 
         # Gets windmill position and makes a path that begins and ends at launch site
         windmill_positions = get_windmill_positions()
+        userdata.windmill_list = windmill_positions
         home_point = Super_point(0, 0, 0)
         windmill_positions.append(home_point)
         windmill_positions.insert(0, home_point)
@@ -45,8 +46,8 @@ class Flying_to_target(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['arrived_at_landing_pos','arrived_at_windmill'],
-                            input_keys=['path', 'drone', 'current_windmill', 'sub_path'],
-                            output_keys=['path', 'drone', 'current_windmill', 'sub_path'])
+                            input_keys=['path', 'drone', 'current_windmill', 'sub_path', 'windmill_list'],
+                            output_keys=['path', 'drone', 'current_windmill', 'sub_path', 'windmill_list'])
 
     def execute(self, userdata):
 
@@ -218,6 +219,7 @@ def main():
     sm.userdata.rust_score_dict = {}
     sm.userdata.current_windmill = None
     sm.userdata.sub_path = []
+    sm.userdata.windmill_list = []
 
 
     # Open the container
