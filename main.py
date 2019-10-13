@@ -46,8 +46,8 @@ class Flying_to_target(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['arrived_at_landing_pos','arrived_at_windmill'],
-                            input_keys=['path', 'drone', 'current_windmill', 'sub_path', 'windmill_list'],
-                            output_keys=['path', 'drone', 'current_windmill', 'sub_path', 'windmill_list'])
+                            input_keys=['path', 'drone', 'current_windmill', 'sub_path', 'next_windmill'],
+                            output_keys=['path', 'drone', 'current_windmill', 'sub_path', 'next_windmill'])
 
     def execute(self, userdata):
 
@@ -56,8 +56,11 @@ class Flying_to_target(smach.State):
         if target.x == 0 and target.y == 0: # target is launch pad
             userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
         else:
-            # Modify target such that drone stops in front of windmill
+            # Save windmill pos for use in Inspection 
             userdata.current_windmill = target
+            userdata.next_windmill = userdata.path[-1]
+
+            # Modify target such that drone stops in front of windmill
             x_new, y_new = get_closer_target(userdata.drone, target, RADIUS_AROUND_WINDMILL)
 
             # find desired yaw
@@ -89,20 +92,19 @@ class Inspecting(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['inspection_complete'],
-                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path'],
-                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path'])
+                            input_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path', 'next_windmill'],
+                            output_keys=['drone', 'rust_score_dict', 'rust_reports', 'current_windmill', 'sub_path', 'next_windmill'])
 
     def execute(self, userdata):
-        sub_path = userdata.sub_path
         images = []
         has_rust = False
         rust_images = []
         first_target = True
 
         # Defines points where phots should be taken
-        picture_target = [sub_path[0]]
-        picture_target.append(sub_path[int(len(sub_path)/2)])
-        picture_target.append(sub_path[-1])
+        picture_target = [userdata.sub_path[0]]
+        picture_target.append(userdata.sub_path[int(len(userdata.sub_path)/2)])
+        picture_target.append(userdata.sub_path[-1])
 
 
         for target in userdata.sub_path:
@@ -147,27 +149,27 @@ class Inspecting(smach.State):
             send_single_inspection_report(rust_report)
 
         else:
-            #photo_id = 0
+
+            # Start flying to next windmill, because the image analysis takes a while
+            userdata.drone.set_target(userdata.next_windmill.x, userdata.next_windmill.y, OPERATING_HEIGHT)
+
             score_sum = 0
+            photo_id = 0
+            windmill_position = userdata.current_windmill
+
+            # Sjekk bilder fra windillen etter rust
             for img in images:
                 score = rust_score(img)
-
-                # Lagre bilde og score
-                #windmill_position = userdata.current_windmill
-                #save_photos(windmill_position, photo_id, img, score, totalScore)
-                #photo_id = photo_id + 1
 
                 if score > RUST_THRESHOLD:
                     has_rust = True
                     rust_images.append(img)
                     score_sum = score_sum + score
 
-            photo_id = 0
-            windmill_position = userdata.current_windmill
-            for img in images:
-                score = rust_score(img)
+                # Lagre bilde og score
                 save_photos(windmill_position, photo_id, img, score, score_sum)
                 photo_id = photo_id + 1
+                
 
             # Save rust score for later sorting
             userdata.rust_score_dict[(windmill_position.x, windmill_position.y)] = score_sum
@@ -218,6 +220,7 @@ def main():
     sm.userdata.rust_reports = []
     sm.userdata.rust_score_dict = {}
     sm.userdata.current_windmill = None
+    sm.userdata.next_windmill = None
     sm.userdata.sub_path = []
     sm.userdata.windmill_list = []
 
