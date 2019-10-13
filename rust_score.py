@@ -14,12 +14,12 @@ def crop_base(image_array):
     R,G,B = cv.split(img)
 
     #Set hue, value, saturation parameters
-    low_hue = 10
-    low_sat = 135
-    low_val = 0
-    upp_hue = 36
+    low_hue = 4
+    low_sat = 133
+    low_val = 10
+    upp_hue = 18
     upp_sat = 255
-    upp_val = 189
+    upp_val = 120
 
     #to hue, value saturation img
     hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
