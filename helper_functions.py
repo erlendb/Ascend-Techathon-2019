@@ -68,7 +68,7 @@ def angle3pt(a, b, c):
     return ang + 360.0 if ang < 0.0 else ang
 
 
-def points_around_windmill(drone, windmill_pos, total_points=6, cut=2.0/3.0): 
+def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0): 
     # parameter for tuning
     radius = RADIUS_AROUND_WINDMILL          # Avstand fra fyrtårn [m]
 
@@ -85,9 +85,9 @@ def points_around_windmill(drone, windmill_pos, total_points=6, cut=2.0/3.0):
     print(index_array)
     # Første punkt er drone_pos!!
     # Finner vinkel for verdenskoordinater til dronekoordinater
-    angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (drone.position.x, drone.position.y))
+    angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (position.x, position.y))
     
-    point.append(Super_point(drone.position.x, drone.position.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
+    point.append(Super_point(position.x, position.y, math.radians(angle-90)))  # Første punkt er drone_pos!!
     
     for i in index_array:
         point.append(Super_point((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y, math.radians(angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), ((x[i]*math.cos(math.radians(angle)) - y[i]*math.sin(math.radians(angle))) + windmill_pos.x, (y[i]*math.cos(math.radians(angle)) + x[i]*math.sin(math.radians(angle))) + windmill_pos.y))-90)))
