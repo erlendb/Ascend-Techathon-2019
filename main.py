@@ -28,7 +28,6 @@ class Starting_mission(smach.State):
                             output_keys=['path', 'drone'])
 
     def execute(self, userdata):
-        print("takeoff")
         userdata.drone.activate()
         userdata.drone.takeoff(TAKEOFF_HEIGHT)
 
@@ -52,7 +51,6 @@ class Flying_to_target(smach.State):
     def execute(self, userdata):
 
         target = userdata.path.pop()
-        print(target)
 
         if target.x == 0 and target.y == 0: # target is launch pad
             userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
@@ -66,9 +64,9 @@ class Flying_to_target(smach.State):
 
             userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
-            next_target = userdata.path[0]
+            next_target = userdata.path[-1]
             angle = angle3pt((target.x, target.y), (userdata.drone.position.x, userdata.drone.position.y), (next_target.x, next_target.y))
-            print(angle)
+
             if math.sin(math.radians(angle)) > 0:
                 userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), userdata.current_windmill, clockwise=True)
             else:
@@ -104,11 +102,6 @@ class Inspecting(smach.State):
         picture_target = [sub_path[0]]
         picture_target.append(sub_path[int(len(sub_path)/2)])
         picture_target.append(sub_path[-1])
-        print("Picture target")
-        print(picture_target)
-        
-        print("sub path")
-        print(sub_path)
 
 
         for target in userdata.sub_path:
