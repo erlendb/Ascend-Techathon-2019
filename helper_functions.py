@@ -79,7 +79,7 @@ def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, 
     short_radius = radius / 1.5
 
     for i in range(len(t)):  # Lager punkter med radius radius fra origo
-        if i % 2 = 1:
+        if i % 2 == 1:
             radius = short_radius
         else:
             radius = normal_radius

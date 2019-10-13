@@ -67,7 +67,7 @@ class Flying_to_target(smach.State):
             userdata.drone.set_target(x_new, y_new, OPERATING_HEIGHT, yaw = target_yaw)
 
             next_target = userdata.path[0]
-            angle = angle3pt((userdata.drone.position.x, userdata.drone.position.y), (target.x, target.y), (next_target.x, next_target.y))
+            angle = angle3pt((target.x, target.y), (userdata.drone.position.x, userdata.drone.position.y), (next_target.x, next_target.y))
             if math.sin(math.radians(angle)) > 0:
                 userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), userdata.current_windmill, clockwise=False)
             else:
