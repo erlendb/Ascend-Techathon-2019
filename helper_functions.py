@@ -132,7 +132,7 @@ def get_dist(point1, point2):
 
 def direct_travel_allowed(drone_pos, current_windmill, next_windmill):
     angle = angle3pt((drone_pos.x, drone_pos.y), (current_windmill.x, current_windmill.y), (next_windmill.x, next_windmill.y))
-    if angle > 120 or (angle > 240 and angle <= 360):
+    if (angle > 0 and angle < 120) or (angle > 240 and angle <= 360):
         return True
     else:
         return False

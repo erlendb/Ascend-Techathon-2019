@@ -123,7 +123,6 @@ class Inspecting(smach.State):
                         continue
                     continue
 
-            first_target = False
 
             # Take and analyse photo
             if TASK2:
@@ -136,9 +135,19 @@ class Inspecting(smach.State):
                     send_single_inspection_report(rust_report)
                     picture_target = []
 
+                    # Kanskje fly direkte videre
+                    if direct_travel_allowed(userdata.drone_pos.position, userdata.current_windmill, userdata.next_windmill):
+                        if first_target:
+                            x_new, y_new = get_closer_target(userdata.drone, target, 12)
+                            userdata.drone.set_target(x_new, y_new)
+                            while not is_at_target(userdata.drone):
+                                continue
+                        return 'inspection_complete'
+
             else:
                 images.append(userdata.drone.camera.image)
 
+            first_target = False
 
 
         if TASK2:
