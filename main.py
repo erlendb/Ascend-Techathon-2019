@@ -167,9 +167,11 @@ class Inspecting(smach.State):
                     rust_images.append(img)
                     score_sum = score_sum + score
 
-            for i in range(0, len(images)):
+            photo_id = 0
+            for img in images:
                 # Lagre bilde og score
-                save_photos(windmill_position, i, images[i], score[i], score_sum)
+                save_photos(windmill_position, photo_id, img, scorearray[photo_id], score_sum)
+                photo_id = photo_id + 1
 
 
             # Save rust score for later sorting
