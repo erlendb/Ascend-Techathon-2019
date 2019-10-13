@@ -32,7 +32,7 @@ def is_at_target(drone):
 
 def is_almost_at_target(drone):
 
-    radius = 8  # Radius for almost at target
+    radius = 6  # Radius for almost at target
 
     distance_to_target = ((drone.target.x - drone.position.x)**2 +
                           (drone.target.y - drone.position.y)**2 +
@@ -75,7 +75,15 @@ def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, 
     x = []
     y = []
 
+    normal_radius = radius
+    short_radius = radius / 1.5
+
     for i in range(len(t)):  # Lager punkter med radius radius fra origo
+        if i % 2 = 1:
+            radius = short_radius
+        else:
+            radius = normal_radius
+
         if clockwise:
             x.append(radius*(math.sin(math.radians(t[i]))))
         else:
@@ -83,7 +91,7 @@ def points_around_windmill(position, windmill_pos, total_points=6, cut=2.0/3.0, 
         y.append(radius*(math.cos(math.radians(t[i]))))
 
     index_array = list((range(int(total_points/total_points), int(math.ceil(total_points*cut)) + 1, int(total_points/total_points))))  # Første punkt er drone_pos!! (evt endre på første )
-    print(index_array)
+    
     # Første punkt er drone_pos!!
     # Finner vinkel for verdenskoordinater til dronekoordinater
     angle = angle3pt((windmill_pos.x, windmill_pos.y + radius), (windmill_pos.x, windmill_pos.y), (position.x, position.y))
