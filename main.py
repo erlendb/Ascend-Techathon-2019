@@ -28,7 +28,7 @@ class Starting_mission(smach.State):
                             output_keys=['path', 'drone'])
 
     def execute(self, userdata):
-
+        print("takeoff")
         userdata.drone.activate()
         userdata.drone.takeoff(TAKEOFF_HEIGHT)
 
@@ -52,6 +52,7 @@ class Flying_to_target(smach.State):
     def execute(self, userdata):
 
         target = userdata.path.pop()
+        print(target)
 
         if target.x == 0 and target.y == 0: # target is launch pad
             userdata.drone.set_target(target.x, target.y, LANDING_HEIGHT)
