@@ -255,6 +255,7 @@ def main():
 
     rust_reports = []
     #rust_reports.append(build_rust_report_message(windmill_position, has_rust, rust_images))
+    '''22
     rust_reports.append(build_rust_report_message(Super_point(0.0, 100.0), True, []))
     rust_reports.append(build_rust_report_message(Super_point(150.0, 100.0), True, []))
     rust_reports.append(build_rust_report_message(Super_point(-150.0, 100.0), True, []))
@@ -265,6 +266,17 @@ def main():
     rust_reports.append(build_rust_report_message(Super_point(75.0, -100.0), True, []))
     rust_reports.append(build_rust_report_message(Super_point(-75.0, -100.0), True, []))
     rust_reports.append(build_rust_report_message(Super_point(-75.0, 200.0), False, []))
+    '''
+    rust_reports.append(build_rust_report_message(Super_point(150.0, 100.0), True, [])) #1427
+    rust_reports.append(build_rust_report_message(Super_point(0.0, 100.0), True, [])) #2080
+    rust_reports.append(build_rust_report_message(Super_point(-150.0, 100.0), True, [])) #1247
+    rust_reports.append(build_rust_report_message(Super_point(-225.0, 200.0), True, [])) #266
+    rust_reports.append(build_rust_report_message(Super_point(225.0, 200.0), True, [])) #338
+    rust_reports.append(build_rust_report_message(Super_point(75.0, 200.0), True, [])) #109
+    rust_reports.append(build_rust_report_message(Super_point(75.0, -100.0), True, [])) #91
+    rust_reports.append(build_rust_report_message(Super_point(0.0, -200.0), True, [])) #137
+    rust_reports.append(build_rust_report_message(Super_point(-75.0, -100.0), True, [])) #62
+    rust_reports.append(build_rust_report_message(Super_point(-75.0, 200.0), False, [])) #0
 
     drone.activate()
     send_total_inspection_report(rust_reports)
