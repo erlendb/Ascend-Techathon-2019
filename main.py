@@ -96,8 +96,14 @@ class Inspecting(smach.State):
 
         # Defines points where phots should be taken
         picture_target = [sub_path[0]]
-        picture_target.append(sub_path[-1])
         picture_target.append(sub_path[int(len(sub_path)/2)])
+        picture_target.append(sub_path[-1])
+        print("Picture target")
+        print(picture_target)
+        
+        print("sub path")
+        print(sub_path)
+
 
         for target in userdata.sub_path:
 
