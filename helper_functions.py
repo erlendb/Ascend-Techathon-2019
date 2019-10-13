@@ -30,6 +30,17 @@ def is_at_target(drone):
     return False
 
 
+def is_collision(drone, current_windmill):
+    detection_radius = RADIUS_AROUND_WINDMILL-5
+    distance_to_target = ((current_windmill.x - drone.position.x)**2 +
+                          (current_windmill.y - drone.position.y)**2)**0.5
+
+    if distance_to_target < detection_radius:
+        return True
+
+    return False
+
+
 def is_almost_at_target(drone):
 
     radius = 6  # Radius for almost at target

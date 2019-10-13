@@ -24,8 +24,8 @@ class Starting_mission(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['startup_complete'],
-                            input_keys=['path', 'drone'],
-                            output_keys=['path', 'drone'])
+                            input_keys=['path', 'drone', 'windmill_list'],
+                            output_keys=['path', 'drone', 'windmill_list'])
 
     def execute(self, userdata):
         userdata.drone.activate()
@@ -33,6 +33,7 @@ class Starting_mission(smach.State):
 
         # Gets windmill position and makes a path that begins and ends at launch site
         windmill_positions = get_windmill_positions()
+        userdata.windmill_list = windmill_positions
         home_point = Super_point(0, 0, 0)
         windmill_positions.append(home_point)
         windmill_positions.insert(0, home_point)
@@ -45,8 +46,8 @@ class Flying_to_target(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                             outcomes=['arrived_at_landing_pos','arrived_at_windmill'],
-                            input_keys=['path', 'drone', 'current_windmill', 'sub_path'],
-                            output_keys=['path', 'drone', 'current_windmill', 'sub_path'])
+                            input_keys=['path', 'drone', 'current_windmill', 'sub_path', 'windmill_list'],
+                            output_keys=['path', 'drone', 'current_windmill', 'sub_path', 'windmill_list'])
 
     def execute(self, userdata):
 
@@ -76,7 +77,19 @@ class Flying_to_target(smach.State):
         # TODO: collision avoidance
 
         while not is_at_target(userdata.drone):
-            continue
+            for current_windmill in userdata.windmill_list:
+                if is_collision(userdata.drone, current_windmill):  # Sett inn og dobbelsjekk funskjonen
+                    next_target = userdata.path[-1]
+                    angle = angle3pt((current_windmill.x, current_windmill.y), (userdata.drone.position.x, userdata.drone.position.y), (next_target.x, next_target.y))
+                    if math.sin(math.radians(angle)) > 0:
+                        userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), current_windmill, clockwise=True)
+                    else:
+                        userdata.sub_path = points_around_windmill(Super_point(x_new, y_new, 0), current_windmill, cut=3.0/4.0, total_points=12, clockwise=False)
+                        for new_target in userdata.sub_path:
+                            userdata.drone.set_target(new_target.x, new_target.y) # VIl holde samme yaw?
+                            while not is_almost_at_target(userdata.drone):  # Sett inn og dobbelsjekk funksjonen
+                                continue  # er continue på riktig plass??
+        
 
         if not userdata.path:   # no more targets in path => drone is back home
             return 'arrived_at_landing_pos'
@@ -218,6 +231,7 @@ def main():
     sm.userdata.rust_score_dict = {}
     sm.userdata.current_windmill = None
     sm.userdata.sub_path = []
+    sm.userdata.windmill_list = []
 
 
     # Open the container
