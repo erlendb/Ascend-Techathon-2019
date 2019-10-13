@@ -113,7 +113,7 @@ def weighing_vertical(y, centreY, height_base, max_weight):
     max_weight = float(max_weight)
     height_base = float(height_base)
 
-    MOVE_CENTRE_Y = 110
+    MOVE_CENTRE_Y = 120
 
     centreY = centreY + MOVE_CENTRE_Y
 
@@ -159,6 +159,10 @@ def weighing_horizontal(x, centreX, width, max_weight):
 
     x_local = abs(x_local)
     r = width/2
+
+    if x_local/r >= 1.0:
+        return max_weight
+
     theta = np.arccos(x_local/r)
     weight = 1/(np.sin(theta))
 

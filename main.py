@@ -157,17 +157,19 @@ class Inspecting(smach.State):
             windmill_position = userdata.current_windmill
 
             # Sjekk bilder fra windillen etter rust
+            scorearray = []
             for img in images:
                 score = rust_score(img)
+                scorearray.append(score)
 
                 if score > RUST_THRESHOLD:
                     has_rust = True
                     rust_images.append(img)
                     score_sum = score_sum + score
 
+            for i in range(0, len(images)):
                 # Lagre bilde og score
-                save_photos(windmill_position, photo_id, img, score, score_sum)
-                photo_id = photo_id + 1
+                save_photos(windmill_position, i, images[i], score[i], score_sum)
 
 
             # Save rust score for later sorting
